@@ -1,22 +1,23 @@
+// src/pages/Departure.jsx
+import { useState } from "react";
+import { mockFlights } from "../data/mockFlights";
+import FlightCard from "../components/FlightCard";
+import { useNavigate } from "react-router";
 
-import { useState } from 'react';
-import { mockFlights } from '../data/mockFlights';
-import FlightCard from '../components/FlightCard';
-import { useNavigate } from 'react-router';
-
-const Home = () => {
-  const [tripType, setTripType] = useState('round-trip');
+const Departure = () => {
+  const [tripType, setTripType] = useState("round-trip");
   const navigate = useNavigate();
 
   const handleSelectFlight = (flight) => {
-    navigate('/departure', { state: { flight } });
+    // Pass selected outbound flight to Return page
+    navigate("/return", { state: { outboundFlight: flight } });
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="relative bg-gray-200 h-64 flex items-center justify-center">
-        <div className="text-center">  
+        <div className="text-center">
           <p className="text-gray-600">[HERO IMAGE PLACEHOLDER]</p>
         </div>
       </div>
@@ -31,20 +32,22 @@ const Home = () => {
                 type="radio"
                 name="tripType"
                 value="round-trip"
-                checked={tripType === 'round-trip'}
+                checked={tripType === "round-trip"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
-              <span className="text-lg font-medium text-gray-800">Round-trip</span>
+              <span className="text-lg font-medium text-gray-800">
+                Round-trip
+              </span>
             </label>
             <label className="flex items-center cursor-pointer">
               <input
                 type="radio"
                 name="tripType"
                 value="one-way"
-                checked={tripType === 'one-way'}
+                checked={tripType === "one-way"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
               <span className="text-lg font-medium text-gray-700">One-way</span>
             </label>
@@ -53,11 +56,13 @@ const Home = () => {
                 type="radio"
                 name="tripType"
                 value="multi-city"
-                checked={tripType === 'multi-city'}
+                checked={tripType === "multi-city"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
-              <span className="text-lg font-medium text-gray-700">Multi-city</span>
+              <span className="text-lg font-medium text-gray-700">
+                Multi-city
+              </span>
             </label>
             <label className="flex items-center cursor-pointer ml-auto">
               <input type="checkbox" className="mr-3 w-5 h-5" />
@@ -67,7 +72,6 @@ const Home = () => {
 
           {/* Search Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            {/* From */}
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Leaving from
@@ -79,16 +83,24 @@ const Home = () => {
               />
             </div>
 
-            {/* Swap Icon */}
             <div className="md:col-span-1 flex justify-center">
               <button className="bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition">
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                  />
                 </svg>
               </button>
             </div>
 
-            {/* To */}
             <div className="md:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Going to
@@ -100,7 +112,6 @@ const Home = () => {
               />
             </div>
 
-            {/* Dates */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Dates
@@ -113,7 +124,6 @@ const Home = () => {
               />
             </div>
 
-            {/* Passengers & Class */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Passengers & Class
@@ -123,11 +133,20 @@ const Home = () => {
               </select>
             </div>
 
-            {/* Search Button */}
             <div className="md:col-span-1">
               <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
                 Search
               </button>
@@ -136,25 +155,30 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Main Content: Sidebar + Flight Results */}
+      {/* Flight Results */}
       <div className="max-w-7xl mx-auto px-4 mt-12 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Message Us */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Available Flights</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Departure...
+            </h2>
             <div className="bg-white rounded-lg shadow p-6 top-24">
               <h3 className="font-semibold text-gray-800 mb-4">Message us</h3>
               <p className="text-sm text-gray-600 mb-2">For more information</p>
-              <button className=" text-gray-800 text-sm font-medium hover:underline">
+              <button className="text-gray-600 text-sm font-medium hover:underline">
                 Call us
               </button>
               <p className="text-sm text-gray-600 mt-4">For more information</p>
             </div>
           </div>
 
-          {/* Flight Results */}
+          {/* Flights */}
           <div className="lg:col-span-3">
-            <div className="space-y-4"> 
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Available Flights
+            </h2>
+            <div className="space-y-4">
               {mockFlights.map((flight) => (
                 <FlightCard
                   key={flight.id}
@@ -204,4 +228,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Departure;

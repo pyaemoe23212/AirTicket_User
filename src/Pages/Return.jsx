@@ -1,15 +1,19 @@
+// src/pages/Return.jsx
+import { useLocation } from "react-router";
+import { useState } from "react";
+import { mockFlights } from "../data/mockFlights";
+import FlightCard from "../components/FlightCard";
+import { useNavigate } from "react-router";
 
-import { useState } from 'react';
-import { mockFlights } from '../data/mockFlights';
-import FlightCard from '../components/FlightCard';
-import { useNavigate } from 'react-router';
-
-const Home = () => {
-  const [tripType, setTripType] = useState('round-trip');
+const Return = () => {
+  const { state } = useLocation();
+  const outboundFlight = state?.outboundFlight;
+  const [tripType, setTripType] = useState("round-trip");
   const navigate = useNavigate();
 
-  const handleSelectFlight = (flight) => {
-    navigate('/departure', { state: { flight } });
+  const handleSelectFlight = (returnFlight) => {
+    // Pass both flights to Booking
+    navigate("/booking", { state: { outboundFlight, returnFlight } });
   };
 
   return (
@@ -21,7 +25,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Search Form Section */}
+      {/* Search Form */}
       <div className="max-w-7xl mx-auto px-4 mt-12 relative z-10">
         <div className="bg-white rounded-2xl shadow-lg p-6">
           {/* Trip Type Tabs */}
@@ -31,9 +35,9 @@ const Home = () => {
                 type="radio"
                 name="tripType"
                 value="round-trip"
-                checked={tripType === 'round-trip'}
+                checked={tripType === "round-trip"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
               <span className="text-lg font-medium text-gray-800">Round-trip</span>
             </label>
@@ -42,9 +46,9 @@ const Home = () => {
                 type="radio"
                 name="tripType"
                 value="one-way"
-                checked={tripType === 'one-way'}
+                checked={tripType === "one-way"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
               <span className="text-lg font-medium text-gray-700">One-way</span>
             </label>
@@ -53,9 +57,9 @@ const Home = () => {
                 type="radio"
                 name="tripType"
                 value="multi-city"
-                checked={tripType === 'multi-city'}
+                checked={tripType === "multi-city"}
                 onChange={(e) => setTripType(e.target.value)}
-                className="mr-3 w-5 h-5 text-blue-600"
+                className="mr-3 w-5 h-5"
               />
               <span className="text-lg font-medium text-gray-700">Multi-city</span>
             </label>
@@ -67,11 +71,8 @@ const Home = () => {
 
           {/* Search Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            {/* From */}
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Leaving from
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Leaving from</label>
               <input
                 type="text"
                 placeholder="City or Airport"
@@ -79,7 +80,6 @@ const Home = () => {
               />
             </div>
 
-            {/* Swap Icon */}
             <div className="md:col-span-1 flex justify-center">
               <button className="bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,11 +88,8 @@ const Home = () => {
               </button>
             </div>
 
-            {/* To */}
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Going to
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Going to</label>
               <input
                 type="text"
                 placeholder="City or Airport"
@@ -100,11 +97,8 @@ const Home = () => {
               />
             </div>
 
-            {/* Dates */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dates
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Dates</label>
               <input
                 type="text"
                 defaultValue="Jan 15 - Jan 22"
@@ -113,17 +107,13 @@ const Home = () => {
               />
             </div>
 
-            {/* Passengers & Class */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Passengers & Class
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Passengers & Class</label>
               <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option>1 Adult, Economy</option>
               </select>
             </div>
 
-            {/* Search Button */}
             <div className="md:col-span-1">
               <button className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition flex items-center justify-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,31 +126,33 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Main Content: Sidebar + Flight Results */}
+      {/* Flight Results */}
       <div className="max-w-7xl mx-auto px-4 mt-12 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Message Us */}
           <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Available Flights</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Returning...</h2>
             <div className="bg-white rounded-lg shadow p-6 top-24">
               <h3 className="font-semibold text-gray-800 mb-4">Message us</h3>
               <p className="text-sm text-gray-600 mb-2">For more information</p>
-              <button className=" text-gray-800 text-sm font-medium hover:underline">
-                Call us
-              </button>
+              <button className="text-gray-600text-sm font-medium hover:underline">Call us</button>
               <p className="text-sm text-gray-600 mt-4">For more information</p>
             </div>
           </div>
 
-          {/* Flight Results */}
           <div className="lg:col-span-3">
-            <div className="space-y-4"> 
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Available Flights</h2>
+
+            {outboundFlight && (
+              <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+                <p className="font-semibold">Selected Departure Flight:</p>
+                <p>{outboundFlight.airline} • {outboundFlight.flightNumber}</p>
+                <p>{outboundFlight.departureTime} – {outboundFlight.arrivalTime}</p>
+              </div>
+            )}
+
+            <div className="space-y-4">
               {mockFlights.map((flight) => (
-                <FlightCard
-                  key={flight.id}
-                  flight={flight}
-                  onSelect={handleSelectFlight}
-                />
+                <FlightCard key={flight.id} flight={flight} onSelect={handleSelectFlight} />
               ))}
             </div>
           </div>
@@ -200,8 +192,9 @@ const Home = () => {
           </p>
         </div>
       </div>
+
     </div>
   );
 };
 
-export default Home;
+export default Return;

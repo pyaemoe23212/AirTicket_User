@@ -6,7 +6,7 @@ const NavBar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className=" sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 ">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -17,39 +17,17 @@ const NavBar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="flex items-center md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition">
-              Home
-            </Link>
-            <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition">
-              Currency
-            </Link>
-            <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition">
-              Language
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-blue-600 font-medium transition">
-              About Us
-            </Link>
-            <Link to="/sign-in" className="flex items-center">
-            <button
-              onClick={() => setIsLoginOpen(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
-            >
-              Sign In/Register
-            </button>
-
-            {/* Mobile menu button (optional - you can expand later) */}
-            <button className="md:hidden text-gray-700">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </Link>
-          </nav>
-
           {/* Sign In / Register Button */}
-          
+          <nav className="flex items-center md:flex space-x-8">
+            <Link to="/sign-in" className="flex items-center">
+              <button
+                onClick={() => setIsLoginOpen(true)}
+                className=" bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
+              >
+                Sign In/Register
+              </button>
+            </Link>
+          </nav>          
         </div> 
       </div>
 

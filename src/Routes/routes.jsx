@@ -5,6 +5,8 @@ import Layout from "../Layout.jsx";
 import AboutUs from "../Pages/AboutUs.jsx";
 import BookingForm from "../Pages/BookingForm.jsx";
 import SignIn from "../Pages/SignIn.jsx"
+import Departure from "../Pages/Departure.jsx"
+import Return from "../Pages/Return.jsx"
 
 const router = createBrowserRouter([
   {
@@ -24,7 +26,15 @@ const router = createBrowserRouter([
         Component: AboutUs,
       },
       {
-        path: "/booking-form",
+        path: "/departure",
+        Component: Departure,
+      },
+      {
+        path: "/return",
+        Component: Return,
+      },
+      {
+        path: "/booking",
         Component: BookingForm,
       },
       {

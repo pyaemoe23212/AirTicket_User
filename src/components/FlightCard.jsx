@@ -3,8 +3,8 @@ const FlightCard = ({ flight, onSelect }) => {
     <div className="bg-white rounded-lg shadow hover:shadow-md transition p-6 flex items-center justify-between">
       <div className="flex items-center space-x-6 flex-1">
         {/* Airline Logo */}
-        <div className="bg-gray-300 border rounded w-16 h-16">
-            <span className="text-m font-bold text-gray-400 w-13 ">Flight Logo</span>
+        <div className="bg-gray-200 border  w-16 h-16 flex items-center justify-center f">
+            <span className="text-s font-bold text-gray-400 w-13 ">LayYinPyan</span>
         </div>
 
 

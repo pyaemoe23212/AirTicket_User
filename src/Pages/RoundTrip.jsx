@@ -1,7 +1,7 @@
 import FlightSearchPage from "../components/FlightSearchPage";
 
-const Home = () => {
+const RoundTrip = () => {
   return <FlightSearchPage initialTripType="round-trip" />;
 };
 
-export default Home;
+export default RoundTrip;

@@ -1,125 +1,87 @@
 import { useState } from "react";
 
-export default function SignIn() {
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState("login"); // "login" or "register"
+export default function SignIn({ open, setOpen }) {
+  const [screen, setScreen] = useState("login"); // login | register | forgot
+
+  if (!open) return null;
 
   return (
-    <>
-      {/* Trigger Button */}
-      <button
-        onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-black text-white rounded-md"
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={() => setOpen(false)}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-md rounded-lg shadow-lg p-6"
       >
-        Sign In / Register
-      </button>
-
-      {/* Modal */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-md rounded-lg shadow-lg p-6 animate-fadeIn"
-          >
-            {/* Tabs */}
-            <div className="flex border-b mb-4">
-              <button
-                className={`flex-1 py-2 text-center ${
-                  tab === "login"
-                    ? "border-b-2 border-black font-semibold"
-                    : "text-gray-500"
-                }`}
-                onClick={() => setTab("login")}
-              >
-                Log In
-              </button>
-              <button
-                className={`flex-1 py-2 text-center ${
-                  tab === "register"
-                    ? "border-b-2 border-black font-semibold"
-                    : "text-gray-500"
-                }`}
-                onClick={() => setTab("register")}
-              >
-                Register
-              </button>
-            </div>
-
-            {/* Login Form */}
-            {tab === "login" && (
-              <form className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Email/Username"
-                  className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-black"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-black"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800"
-                >
-                  Sign In
-                </button>
-                <p className="text-sm text-right text-gray-600 hover:underline cursor-pointer">
-                  Forgot Password?
-                </p>
-                <p className="text-sm text-center">
-                  Don't have an account?{" "}
-                  <span
-                    className="text-blue-600 cursor-pointer hover:underline"
-                    onClick={() => setTab("register")}
-                  >
-                    Register
-                  </span>
-                </p>
-              </form>
-            )}
-
-            {/* Register Form */}
-            {tab === "register" && (
-              <form className="space-y-3">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-black"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-black"
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm Password"
-                  className="w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-black"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800"
-                >
-                  Register
-                </button>
-                <p className="text-sm text-center">
-                  Already have an account?{" "}
-                  <span
-                    className="text-blue-600 cursor-pointer hover:underline"
-                    onClick={() => setTab("login")}
-                  >
-                    Sign In
-                  </span>
-                </p>
-              </form>
-            )}
+        {/* LOGIN + REGISTER TABS */}
+        {(screen === "login" || screen === "register") && (
+          <div className="flex border-b mb-6">
+            <button
+              onClick={() => setScreen("login")}
+              className={`flex-1 py-2 text-sm ${
+                screen === "login"
+                  ? "border-b-2 border-black font-semibold"
+                  : "text-gray-500"
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => setScreen("register")}
+              className={`flex-1 py-2 text-sm ${
+                screen === "register"
+                  ? "border-b-2 border-black font-semibold"
+                  : "text-gray-500"
+              }`}
+            >
+              Register
+            </button>
           </div>
-        </div>
-      )}
-    </>
+        )}
+
+        {/* ------------ LOGIN ------------ */}
+        {screen === "login" && (
+          <>
+            <input className="w-full mb-3 border p-2 rounded" placeholder="Email / Username" />
+            <input className="w-full mb-3 border p-2 rounded" type="password" placeholder="Password" />
+            <button className="w-full bg-black text-white py-2 rounded">Sign In</button>
+
+            <p
+              className="text-xs text-center mt-3 cursor-pointer text-gray-600 hover:underline"
+              onClick={() => setScreen("forgot")}
+            >
+              Forgot Password?
+            </p>
+          </>
+        )}
+
+        {/* ------------ REGISTER ------------ */}
+        {screen === "register" && (
+          <>
+            <input className="w-full mb-3 border p-2 rounded" placeholder="Username" />
+            <input className="w-full mb-3 border p-2 rounded" placeholder="Email" />
+            <input className="w-full mb-3 border p-2 rounded" type="password" placeholder="Password" />
+            <button className="w-full bg-black text-white py-2 rounded">Sign Up</button>
+          </>
+        )}
+
+        {/* ------------ FORGOT ------------ */}
+        {screen === "forgot" && (
+          <>
+            <input className="w-full mb-3 border p-2 rounded" placeholder="Email" />
+            <button className="w-full bg-black text-white py-2 rounded">
+              Send Reset Link
+            </button>
+            <p
+              className="text-xs text-center mt-3 text-blue-600 cursor-pointer"
+              onClick={() => setScreen("login")}
+            >
+              Back to Login
+            </p>
+          </>
+        )}
+      </div>
+    </div>
   );
-}  
+}

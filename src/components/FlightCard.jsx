@@ -4,7 +4,7 @@ const FlightCard = ({ flight, onSelect }) => {
       <div className="flex items-center space-x-6 flex-1">
         {/* Airline Logo */}
         <div className="bg-gray-200 border  w-16 h-16 flex items-center justify-center f">
-            <span className="text-s font-bold text-gray-400 w-13 ">LayYinPyan</span>
+            <span className="text-s font-bold text-gray-400 w-13 ">Logo</span>
         </div>
 
 

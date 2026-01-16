@@ -7,16 +7,16 @@ import BookingForm from "../Pages/BookingForm.jsx";
 import SignIn from "../Pages/SignIn.jsx"
 import Departure from "../Pages/Departure.jsx"
 import Return from "../Pages/Return.jsx"
+import RoundTrip from "../Pages/RoundTrip.jsx"
+import OneWay from "../Pages/OneWay.jsx"
+import MultiCity from "../Pages/MultiCity.jsx"
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: Layout,
     children: [
-      {
-        path: "/",
-        Component: App,
-      },
+      
       {
         path: "/",
         Component: Home,
@@ -28,6 +28,18 @@ const router = createBrowserRouter([
       {
         path: "/departure",
         Component: Departure,
+      },
+      {
+        path: "/round-trip",
+        Component: RoundTrip,
+      },
+      {
+        path: "/one-way",
+        Component: OneWay,
+      },
+      {
+        path: "/multi-city",
+        Component: MultiCity ,
       },
       {
         path: "/return",

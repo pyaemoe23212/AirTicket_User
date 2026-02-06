@@ -1,4 +1,4 @@
-import FlightSearchPage from "../components/FlightSearchPage";
+import FlightSearchPage from "./FlightSearchPage";
 
 const OneWay = () => {
   return <FlightSearchPage initialTripType="one-way" />;

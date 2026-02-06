@@ -1,4 +1,4 @@
-import FlightSearchPage from "../components/FlightSearchPage";
+import FlightSearchPage from "./FlightSearchPage";
 
 export default function Departure() {
   return (

@@ -18,7 +18,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
       <div className="bg-white rounded-2xl shadow-lg p-6">
         {/* Trip Type Tabs */}
         <div className="flex flex-wrap gap-6 md:gap-8 mb-6 border-b border-gray-200 pb-4">
-          {["round-trip", "one-way", "multi-city"].map((type) => (
+          {["round-trip", "one-way"].map((type) => (
             <label key={type} className="flex items-center cursor-pointer">
               <input
                 type="radio"

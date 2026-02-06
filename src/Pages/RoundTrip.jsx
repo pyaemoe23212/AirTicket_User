@@ -1,4 +1,4 @@
-import FlightSearchPage from "../components/FlightSearchPage";
+import FlightSearchPage from "./FlightSearchPage";
 
 const RoundTrip = () => {
   return <FlightSearchPage initialTripType="round-trip" />;

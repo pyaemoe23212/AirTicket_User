@@ -11,7 +11,7 @@ const AboutSection = () => {
       <div className="max-w-4xl mx-auto text-center">
         <p className="text-base sm:text-lg leading-relaxed text-gray-600">
           We are a leading airline booking platform dedicated to transforming the way travelers discover and book flights worldwide. 
-          Our platform connects millions of passengers with thousands of airlines, offering comprehensive flight options, competitive pricing, and real-time availability.
+          Our platform connects millions of passengers with thousands of airlines, offering comprehensive flight options, competitive pricing, and real-time.
         </p>
       </div>
     </div>

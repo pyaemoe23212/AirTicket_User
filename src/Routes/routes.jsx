@@ -7,7 +7,8 @@ import Departure from "../Pages/Departure.jsx"
 import Return from "../Pages/Return.jsx"
 import RoundTrip from "../Pages/RoundTrip.jsx"
 import OneWay from "../Pages/OneWay.jsx"
-
+import Profile from "../Pages/Profile.jsx"
+import EditInfo from "../components/EditInfo.jsx"
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,14 @@ const router = createBrowserRouter([
       {
         path: "/sign-in",
         Component: SignIn,
+      },
+      {
+        path: "/profile",
+        Component: Profile,
+      },
+      {
+        path: "/edit-info",
+        Component: EditInfo,
       },
     ],
   },

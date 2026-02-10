@@ -82,6 +82,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
             />
           </div>
 
+          {/* Fix Part */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">Dates</label>
             <input
@@ -107,6 +108,8 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               <option>1 Adult, Business</option>
             </select>
           </div>
+          {/* Fix Part */}
+
 
           <div className="md:col-span-1">
             <button

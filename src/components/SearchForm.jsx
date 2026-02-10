@@ -4,8 +4,8 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
-    dates: "",
-    passengers: "1 Adult, Economy"
+    dates: "Jan 15 - Jan 22",
+    passengers: 1
   });
 
   const handleSearch = (e) => {
@@ -83,31 +83,64 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
           </div>
 
           {/* Fix Part */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dates</label>
-            <input
-              type="text"
-              placeholder="Select dates"
-              value={searchData.dates}
-              onChange={(e) => setSearchData({ ...searchData, dates: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+         
+      <div className="md:col-span-2 max-w-[200px]">
+        <label className="block text-xs font-medium text-gray-600 mb-1">Dates</label>
+        <div className="relative">
+        <input
+      type="text"
+      placeholder="Jan 15 - Jan 22"
+      value={searchData.dates}
+      onChange={(e) => setSearchData({ ...searchData, dates: e.target.value })}
+      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+      ▼
+    </span>
+  </div>
+</div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Passengers & Class
-            </label>
-            <select 
-              value={searchData.passengers}
-              onChange={(e) => setSearchData({ ...searchData, passengers: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option>1 Adult, Economy</option>
-              <option>2 Adults, Economy</option>
-              <option>1 Adult, Business</option>
-            </select>
-          </div>
+{/* Number of Passengers */}
+<div className="md:col-span-2 max-w-[180px]">
+  <label className="block text-xs font-medium text-gray-600 mb-1">
+    Number of passengers
+  </label>
+  <div className="flex items-center gap-1">
+    <button
+      type="button"
+      onClick={() =>
+        setSearchData((prev) => ({
+          ...prev,
+          passengers: Math.max(1, Number(prev.passengers) - 1),
+        }))
+      }
+      className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
+    >
+      –
+    </button>
+
+    <input
+      type="text"
+      value={searchData.passengers}
+      readOnly
+      className="w-10 h-7 text-center text-sm border border-gray-300 rounded"
+    />
+
+    <button
+      type="button"
+      onClick={() =>
+        setSearchData((prev) => ({
+          ...prev,
+          passengers: Number(prev.passengers) + 1,
+        }))
+      }
+      className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
+    >
+      +
+    </button>
+  </div>
+</div>
+
           {/* Fix Part */}
 
 

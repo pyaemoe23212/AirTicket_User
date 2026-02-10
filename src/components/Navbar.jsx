@@ -1,6 +1,6 @@
 // src/components/NavBar.jsx
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import SignIn from "../Pages/SignIn";
 
 const NavBar = () => {
@@ -18,14 +18,23 @@ const NavBar = () => {
           </div>
 
           {/* Sign In / Register Button */}
-          <nav className="flex items-center md:flex space-x-8">
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
-              >
-                Sign In / Register
-              </button>
-          </nav>
+          {/* Sign In / Register + Profile */}
+<nav className="flex items-center space-x-4">
+  <Link
+    to="/profile"
+    className="px-4 py-2 rounded-full border text-gray-700 hover:bg-gray-100 text-sm"
+  >
+    Profile
+  </Link>
+
+  <button
+    onClick={() => setIsLoginOpen(true)}
+    className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
+  >
+    Sign In / Register
+  </button>
+</nav>
+
         </div>
       </div>
       

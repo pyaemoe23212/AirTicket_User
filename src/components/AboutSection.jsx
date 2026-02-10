@@ -1,20 +1,29 @@
 const AboutSection = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-white">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-3 sm:gap-4">
-          <span className="block w-12 sm:w-16 h-0.5 bg-gray-400"></span>
-          <h2 className="text-3xl sm:text-4xl font-semibold text-gray-800">About Us</h2>
-          <span className="block w-12 sm:w-16 h-0.5 bg-gray-400"></span>
+    <section className="bg-gray-50 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Card */}
+        <div className="bg-white border rounded-md p-10">
+
+          {/* Title Row */}
+          <div className="flex items-center gap-4 mb-6">
+            <span className="block w-12 h-[2px] bg-gray-400"></span>
+            <h2 className="text-xl sm:text-2xl font-medium text-gray-900 whitespace-nowrap">
+              About Us
+            </h2>
+            <span className="flex-1 h-px bg-gray-200"></span>
+          </div>
+
+          {/* Text */}
+          <p className="max-w-5xl text-sm sm:text-base leading-7 text-gray-600">
+            We are a leading airline booking platform dedicated to transforming the way travelers discover and book flights worldwide. 
+            Our platform connects millions of passengers with thousands of airlines, offering comprehensive flight options, competitive pricing, and real-time availability.
+          </p>
+
         </div>
       </div>
-      <div className="max-w-4xl mx-auto text-center">
-        <p className="text-base sm:text-lg leading-relaxed text-gray-600">
-          We are a leading airline booking platform dedicated to transforming the way travelers discover and book flights worldwide. 
-          Our platform connects millions of passengers with thousands of airlines, offering comprehensive flight options, competitive pricing, and real-time.
-        </p>
-      </div>
-    </div>
+    </section>
   );
 };
 

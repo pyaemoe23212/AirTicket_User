@@ -5,7 +5,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
     from: "",
     to: "",
     dates: "Jan 15 - Jan 22",
-    passengers: 1
+    passengers: 1,
   });
 
   const handleSearch = (e) => {
@@ -44,7 +44,10 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
         </div>
 
         {/* Search Fields */}
-        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        <form
+          onSubmit={handleSearch}
+          className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+        >
           <div className="md:col-span-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Leaving from
@@ -53,7 +56,9 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               type="text"
               placeholder="City or Airport"
               value={searchData.from}
-              onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
+              onChange={(e) =>
+                setSearchData({ ...searchData, from: e.target.value })
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -63,8 +68,18 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               type="button"
               className="bg-gray-200 p-3 rounded-full hover:bg-gray-300 transition"
             >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              <svg
+                className="w-6 h-6 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                />
               </svg>
             </button>
           </div>
@@ -77,80 +92,95 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               type="text"
               placeholder="City or Airport"
               value={searchData.to}
-              onChange={(e) => setSearchData({ ...searchData, to: e.target.value })}
+              onChange={(e) =>
+                setSearchData({ ...searchData, to: e.target.value })
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Fix Part */}
-         
-      <div className="md:col-span-2 max-w-[200px]">
-        <label className="block text-xs font-medium text-gray-600 mb-1">Dates</label>
-        <div className="relative">
-        <input
-      type="text"
-      placeholder="Jan 15 - Jan 22"
-      value={searchData.dates}
-      onChange={(e) => setSearchData({ ...searchData, dates: e.target.value })}
-      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-      ▼
-    </span>
-  </div>
-</div>
 
-{/* Number of Passengers */}
-<div className="md:col-span-2 max-w-[180px]">
-  <label className="block text-xs font-medium text-gray-600 mb-1">
-    Number of passengers
-  </label>
-  <div className="flex items-center gap-1">
-    <button
-      type="button"
-      onClick={() =>
-        setSearchData((prev) => ({
-          ...prev,
-          passengers: Math.max(1, Number(prev.passengers) - 1),
-        }))
-      }
-      className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
-    >
-      –
-    </button>
+          <div className="md:col-span-2 max-w-[200px]">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Dates
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Jan 15 - Jan 22"
+                value={searchData.dates}
+                onChange={(e) =>
+                  setSearchData({ ...searchData, dates: e.target.value })
+                }
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                ▼
+              </span>
+            </div>
+          </div>
 
-    <input
-      type="text"
-      value={searchData.passengers}
-      readOnly
-      className="w-10 h-7 text-center text-sm border border-gray-300 rounded"
-    />
+          {/* Number of Passengers */}
+          <div className="md:col-span-2 max-w-[180px]">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Number of passengers
+            </label>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchData((prev) => ({
+                    ...prev,
+                    passengers: Math.max(1, Number(prev.passengers) - 1),
+                  }))
+                }
+                className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
+              >
+                –
+              </button>
 
-    <button
-      type="button"
-      onClick={() =>
-        setSearchData((prev) => ({
-          ...prev,
-          passengers: Number(prev.passengers) + 1,
-        }))
-      }
-      className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
-    >
-      +
-    </button>
-  </div>
-</div>
+              <input
+                type="text"
+                value={searchData.passengers}
+                readOnly
+                className="w-10 h-7 text-center text-sm border border-gray-300 rounded"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchData((prev) => ({
+                    ...prev,
+                    passengers: Number(prev.passengers) + 1,
+                  }))
+                }
+                className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
+              >
+                +
+              </button>
+            </div>
+          </div>
 
           {/* Fix Part */}
-
 
           <div className="md:col-span-1">
             <button
               type="submit"
               className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition flex items-center justify-center"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
               Search
             </button>

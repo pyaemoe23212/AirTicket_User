@@ -48,73 +48,208 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-6 text-gray-800 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">Review & Passenger Info</h1>
-      </div>
+    <div className="bg-gray-100 min-h-screen py-10">
+      <div className="max-w-6xl mx-auto bg-white border border-gray-300 p-8 text-gray-800">
 
-      {/* Selected Flights */}
-      <div className="bg-white border p-4 mb-4 rounded">
-        <h2 className="text-sm font-semibold mb-2">Your Selected Flights</h2>
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-medium">
+            Review & Passenger Info
+          </h1>
+          <button className="text-sm text-gray-500 underline">
+            Change flight
+          </button>
+        </div>
 
-        {selectedFlights.length === 0 ? (
-          <p className="text-xs text-gray-400">No flights selected</p>
-        ) : (
-          selectedFlights.map((f, i) => (
-            <div
-              key={i}
-              className="flex justify-between items-center border-b py-2 text-xs"
-            >
-              <div className="flex gap-2 items-center">
-                <span className="px-2 py-1 bg-gray-100 rounded text-[10px]">
-                  {f.label || (i === 0 ? "Outbound" : "Return")}
-                </span>
+        {/* SELECTED FLIGHTS */}
+        <div className="border border-gray-300 p-6 mb-8">
+          <h2 className="text-sm font-medium mb-4">
+            Your Selected Flights
+          </h2>
+
+          {selectedFlights.length === 0 ? (
+            <p className="text-xs text-gray-400">
+              No flights selected
+            </p>
+          ) : (
+            selectedFlights.map((f, i) => (
+              <div
+                key={i}
+                className="flex justify-between items-center py-3 border-b last:border-none text-sm"
+              >
                 <p>
-                  {f.airline} • {f.flightNumber} • {f.departureTime} →{" "}
-                  {f.arrivalTime}
+                  {f.airline} • {f.flightNumber} • {f.departureTime} → {f.arrivalTime}
                 </p>
+                <p className="text-gray-500">${f.price}</p>
               </div>
-              <p className="text-gray-500">${f.price}</p>
+            ))
+          )}
+        </div>
+
+        {/* CONTACT SECTION */}
+        <div className="border border-gray-300 p-6 mb-8">
+          <h2 className="text-sm font-medium">Contact details</h2>
+          <p className="text-xs text-gray-500 mb-6">
+            This is where your confirmation will be sent
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-xs block mb-1">Given names</label>
+              <input
+                name="givenName"
+                onChange={handleContactChange}
+                placeholder="Enter given names"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
             </div>
-          ))
-        )}
-      </div>
 
-      {/* Contact */}
-      <div className="bg-white border p-4 mb-4 rounded">
-        <h2 className="text-sm font-semibold mb-2">Contact details</h2>
+            <div>
+              <label className="text-xs block mb-1">Last name</label>
+              <input
+                name="lastName"
+                onChange={handleContactChange}
+                placeholder="Enter last name"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+            </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <input name="givenName" onChange={handleContactChange} placeholder="Enter given names" className="border p-2 text-sm" />
-          <input name="lastName" onChange={handleContactChange} placeholder="Enter last name" className="border p-2 text-sm" />
-          <input name="email" onChange={handleContactChange} placeholder="Enter email" className="border p-2 text-sm" />
-          <input name="country" onChange={handleContactChange} placeholder="Country / region of residence" className="border p-2 text-sm" />
+            <div>
+              <label className="text-xs block mb-1">Email</label>
+              <input
+                name="email"
+                onChange={handleContactChange}
+                placeholder="Enter email"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs block mb-1">
+                Country / region of residence
+              </label>
+              <input
+                name="country"
+                onChange={handleContactChange}
+                placeholder="Enter country"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 bg-gray-100 p-4 border border-gray-300">
+            <label className="text-xs block mb-1">Phone number</label>
+            <input
+              name="phone"
+              onChange={handleContactChange}
+              placeholder="+1 (555) 000-0000"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+          </div>
         </div>
 
-        <input name="phone" onChange={handleContactChange} placeholder="+1 (555) 000-0000" className="border p-2 text-sm w-full mt-3" />
-      </div>
+        {/* PASSENGER SECTION */}
+        <div className="border border-gray-300 p-6">
+          <h2 className="text-sm font-medium mb-1">
+            Passenger 1
+          </h2>
+          <p className="text-xs text-gray-500 mb-6">
+            Passenger details must match your passport or photo ID
+          </p>
 
-      {/* Passenger */}
-      <div className="bg-white border p-4 mb-4 rounded">
-        <h2 className="text-sm font-semibold mb-1">Passenger 1:</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-xs block mb-1">Given names</label>
+            <input
+              name="givenName"
+              onChange={handlePassengerChange}
+              placeholder="Enter given names"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+            </div>
+            <div>
+              <label className="text-xs block mb-1">Last name</label>
+            <input
+              name="lastName"
+              onChange={handlePassengerChange}
+              placeholder="Enter last name"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+            </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <input name="givenName" onChange={handlePassengerChange} placeholder="Enter given names" className="border p-2 text-sm" />
-          <input name="lastName" onChange={handlePassengerChange} placeholder="Enter last name" className="border p-2 text-sm" />
-          <input name="passport" onChange={handlePassengerChange} placeholder="Enter Passport Number" className="border p-2 text-sm" />
+            <div>
+              <label className="text-xs block mb-1">Passport number</label>
+            <input
+              name="passport"
+              onChange={handlePassengerChange}
+              placeholder="Enter Passport Number"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+            </div>
 
-          <input name="gender" onChange={handlePassengerChange} placeholder="Enter Gender" className="border p-2 text-sm" />
-          <input type="date" name="dob" onChange={handlePassengerChange} className="border p-2 text-sm" />
-          <input name="nationality" onChange={handlePassengerChange} placeholder="Enter Nationality" className="border p-2 text-sm" />
+            <div>
+              <label className="text-xs block mb-1">Gender</label>
+            <input
+              name="gender"
+              onChange={handlePassengerChange}
+              placeholder="Enter Gender"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+            </div>
+            <div>
+              <label className="text-xs block mb-1">Date of Birth</label>
+            <input
+              type="date"
+              name="dob"
+              onChange={handlePassengerChange}
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+            </div>
+            <div>
+              <label className="text-xs block mb-1">Nationality</label>
+            <input
+              name="nationality"
+              onChange={handlePassengerChange}
+              placeholder="Enter Nationality"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+          </div>
+          </div>
+
+
+          <div className="mt-6 bg-gray-100 p-4 border border-gray-300">
+            <label className="text-xs block mb-1">Phone number</label>
+            <input
+              name="phone"
+              onChange={handlePassengerChange}
+              placeholder="+1 (555) 000-0000"
+              className="border border-gray-300 p-2 w-full text-sm"
+            />
+          </div>
         </div>
 
-        <input name="phone" onChange={handlePassengerChange} placeholder="+1 (555) 000-0000" className="border p-2 text-sm w-full mt-3" />
-      </div>
+        {/* CONFIRM BUTTON */}
+        <div className="flex justify-between items-center mt-10">
+          <button
+            onClick={() => navigate("-1")}
+            className="text-sm text-gray-500 hover:underline"
+          >
+            Cancel Booking
+          </button>
+          <button
+            
+            className="bg-black text-white px-8 py-2 text-sm"
+            >
+            Add Passenger
+          </button>
+          <button
+            onClick={handleConfirm}
+            className="bg-black text-white px-8 py-2 text-sm"
+          >
+            Confirm
+          </button>
+        </div>
 
-      <div className="flex justify-end">
-        <button onClick={handleConfirm} className="bg-black text-white px-6 py-2 text-sm rounded">
-          Confirm
-        </button>
       </div>
     </div>
   );

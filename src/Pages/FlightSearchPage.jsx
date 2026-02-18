@@ -10,66 +10,70 @@ const FlightSearchPage = ({
   pageTitle = "Available Flights",
   showSelectedPreviousFlight = false,
 }) => {
-  const { state } = useLocation();
-
-  // Get values from state
-  const outboundFlight = state?.outboundFlight;
-  const previousFlight = state?.flight || state?.outboundFlight;
-  const isReturnPage = state?.isReturnPage || false;
-  const tripTypeFromState = state?.tripType;
-
-  const [tripType, setTripType] = useState(
-    tripTypeFromState || initialTripType,
-  );
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // ✅ reliable step detection
+  const isReturnPage = location.pathname === "/return";
+
+  const state = location.state || {};
+  const tripTypeFromState = state.tripType;
+  const outboundFlight = state.outboundFlight;
+  const previousFlight = state.outboundFlight || state.flight;
+
+  const [tripType, setTripType] = useState(tripTypeFromState || initialTripType);
 
   const handleSearch = (searchData) => {
     navigate("/departure", {
-      state: {
-        tripType,
-        searchData,
-        isFromSearch: true,
-      },
+      state: { tripType, searchData },
     });
   };
 
   const handleSelectFlight = (flight) => {
-    console.log("isReturnPage:", isReturnPage);
-    console.log("outboundFlight:", outboundFlight);
-    console.log("selectedFlight:", flight);
+    // ✅ ROUND TRIP FLOW
+    if (tripType === "round-trip") {
+      if (!isReturnPage) {
+        // select outbound → go /return
+        navigate("/return", {
+          state: {
+            tripType,
+            outboundFlight: flight,
+          },
+        });
+      } else {
+        // select return → go /booking with both
+        if (!outboundFlight) {
+          // if user refresh /return, outbound lost
+          navigate("/departure", { state: { tripType } });
+          return;
+        }
 
-    if (isReturnPage && outboundFlight) {
-      // Return page: selected return flight -> /booking with both flights
+        navigate("/booking", {
+          state: {
+            tripType,
+            outboundFlight,
+            returnFlight: flight,
+          },
+        });
+      }
+      return;
+    }
+
+    // ✅ ONE WAY FLOW
+    if (tripType === "one-way") {
       navigate("/booking", {
         state: {
-          outboundFlight: outboundFlight,
-          returnFlight: flight,
           tripType,
+          outboundFlight: flight,
         },
       });
-    } else if (tripType === "round-trip") {
-      // Departure page for round-trip: selected outbound -> /return
-      navigate("/return", {
-        state: { outboundFlight: flight, tripType, isReturnPage: true },
-      });
-    } else if (tripType === "one-way") {
-      // One-Way: /departure -> /booking
-      navigate("/booking", { state: { flight, tripType } });
     }
-  };
-
-  const onTripTypeChange = (newTripType) => {
-    setTripType(newTripType);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <HeroSection />
-      <SearchForm
-        tripType={tripType}
-        onTripTypeChange={onTripTypeChange}
-        onSearch={handleSearch}
-      />
+      <SearchForm tripType={tripType} onTripTypeChange={setTripType} onSearch={handleSearch} />
 
       <ResultsSection
         pageTitle={pageTitle}
@@ -77,6 +81,7 @@ const FlightSearchPage = ({
         showSelectedPreviousFlight={showSelectedPreviousFlight}
         onSelectFlight={handleSelectFlight}
       />
+
       <AboutSection />
     </div>
   );

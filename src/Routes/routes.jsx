@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import Home from "../Pages/Home.jsx";
 import Layout from "../Layout.jsx";
-import BookingForm from "../Pages/BookingForm.jsx";
+import Booking from "../Pages/Booking.jsx";
 import SignIn from "../Pages/SignIn.jsx"
 import Departure from "../Pages/Departure.jsx"
 import Return from "../Pages/Return.jsx"
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/booking",
-        Component: BookingForm,
+        Component: Booking,
       },
       {
         path: "/sign-in",

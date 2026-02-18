@@ -1,7 +1,12 @@
 import { mockFlights } from "../data/mockFlights";
 import FlightCard from "./FlightCard";
 
-const ResultsSection = ({ pageTitle, previousFlight, showSelectedPreviousFlight, onSelectFlight }) => {
+const ResultsSection = ({
+  pageTitle,
+  previousFlight,
+  showSelectedPreviousFlight,
+  onSelectFlight,
+}) => {
   return (
     <div className="max-w-7xl mx-auto px-4 mt-12 pb-20">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -37,7 +42,7 @@ const ResultsSection = ({ pageTitle, previousFlight, showSelectedPreviousFlight,
               <FlightCard
                 key={flight.id}
                 flight={flight}
-                onSelect={() => onSelectFlight(flight)}
+                onSelect={onSelectFlight} // ✅ correct
               />
             ))}
           </div>

@@ -1,6 +1,14 @@
 import { Link } from "react-router";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
+  const [bookings, setBookings] = useState([]);
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("bookings") || "[]");
+    setBookings(stored);
+  }, []);
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
@@ -21,54 +29,6 @@ export default function Profile() {
         </Link>
       </div>
 
-      {/* Personal Info */}
-      <div className="bg-white border rounded p-6 mb-6">
-        <h3 className="font-semibold mb-4">Personal Information</h3>
-
-        <div className="grid grid-cols-2 gap-6 text-sm">
-          <div>
-            <p className="text-gray-500">Customer ID</p>
-            <p>USR-001</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Email Address</p>
-            <p>sarah.johnson@airline.com</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Phone Number</p>
-            <p>+1 (555) 123-4567</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Registration Date</p>
-            <p>Jan 15, 2024</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="border rounded p-6 mb-6">
-        <h3 className="font-medium mb-4">Booking Statistics</h3>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <p className="text-gray-500 text-sm">Total Bookings</p>
-            <p className="text-lg font-semibold">12</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Total Spent</p>
-            <p className="text-lg font-semibold">$4,580</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Cancelled</p>
-            <p className="text-lg font-semibold">2</p>
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm">Avg Booking</p>
-            <p className="text-lg font-semibold">$382</p>
-          </div>
-        </div>
-      </div>
-
       {/* Recent Bookings */}
       <div className="border rounded p-6">
         <h3 className="font-medium mb-4">Recent Bookings</h3>
@@ -77,60 +37,46 @@ export default function Profile() {
           <thead>
             <tr className="bg-gray-50 text-left">
               <th className="p-2">Booking ID</th>
-              <th className="p-2">Route</th>
-              <th className="p-2">Date</th>
-              <th className="p-2">Amount</th>
+              <th className="p-2">Type</th>
+              <th className="p-2">Flights</th>
+              <th className="p-2">Total</th>
               <th className="p-2">Status</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr className="border-t">
-              <td className="p-2">BK-10245</td>
-              <td className="p-2">JFK → LHR</td>
-              <td className="p-2">Jan 15, 2024</td>
-              <td className="p-2">$520</td>
-              <td className="p-2">
-                <span className="px-2 py-1 bg-green-100 text-green-700">
-                  Completed
-                </span>
-              </td>
-            </tr>
+            {bookings.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="p-2 text-gray-400">
+                  No bookings yet
+                </td>
+              </tr>
+            ) : (
+              bookings.map((b) => {
+                const total = (b.selectedFlights || []).reduce(
+                  (sum, f) => sum + (f.price || 0),
+                  0
+                );
 
-            <tr className="border-t">
-              <td className="p-2">BK-8231</td>
-              <td className="p-2">LAX → NRT</td>
-              <td className="p-2">Dec 22, 2023</td>
-              <td className="p-2">$780</td>
-              <td className="p-2">
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                  Completed
-                </span>
-              </td>
-            </tr>
-
-            <tr className="border-t">
-              <td className="p-2">BK-7958</td>
-              <td className="p-2">SFO → CDG</td>
-              <td className="p-2">Nov 10, 2023</td>
-              <td className="p-2">$650</td>
-              <td className="p-2">
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                  Completed
-                </span>
-              </td>
-            </tr>
-
-            <tr className="border-t">
-              <td className="p-2">BK-7654</td>
-              <td className="p-2">MIA → MAD</td>
-              <td className="p-2">Oct 5, 2023</td>
-              <td className="p-2">$490</td>
-              <td className="p-2">
-                <span className="px-2 py-1 text-xs rounded bg-red-100 text-red-600">
-                  Cancelled
-                </span>
-              </td>
-            </tr>
+                return (
+                  <tr key={b.id} className="border-t">
+                    <td className="p-2">{b.id}</td>
+                    <td className="p-2">{b.tripType}</td>
+                    <td className="p-2">
+                      {(b.selectedFlights || [])
+                        .map((f) => f.flightNumber)
+                        .join(" + ")}
+                    </td>
+                    <td className="p-2">${total}</td>
+                    <td className="p-2">
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                        {b.status}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

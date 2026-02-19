@@ -12,24 +12,47 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
     phone: "",
   });
 
-  const [passenger, setPassenger] = useState({
-    givenName: "",
-    lastName: "",
-    passport: "",
-    gender: "",
-    dob: "",
-    nationality: "",
-    phone: "",
-  });
+  const [passenger, setPassenger] = useState([
+    {
+      givenName: "",
+      lastName: "",
+      passport: "",
+      gender: "",
+      dob: "",
+      nationality: "",
+      phone: "",
+    },
+  ]);
 
+  // CONTACT
   const handleContactChange = (e) => {
     setContact({ ...contact, [e.target.name]: e.target.value });
   };
 
-  const handlePassengerChange = (e) => {
-    setPassenger({ ...passenger, [e.target.name]: e.target.value });
+  // PASSENGER CHANGE (FIXED)
+  const handlePassengerChange = (index, e) => {
+    const updatedPassengers = [...passenger];
+    updatedPassengers[index][e.target.name] = e.target.value;
+    setPassenger(updatedPassengers);
   };
 
+  // ADD PASSENGER (NEW)
+  const handleAddPassenger = () => {
+    setPassenger([
+      ...passenger,
+      {
+        givenName: "",
+        lastName: "",
+        passport: "",
+        gender: "",
+        dob: "",
+        nationality: "",
+        phone: "",
+      },
+    ]);
+  };
+
+  // CONFIRM
   const handleConfirm = () => {
     const booking = {
       id: `BK-${Date.now()}`,
@@ -86,75 +109,11 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
           )}
         </div>
 
-        {/* CONTACT SECTION */}
+        {/* CONTACT */}
         <div className="border border-gray-300 p-6 mb-8">
           <h2 className="text-sm font-medium">Contact details</h2>
           <p className="text-xs text-gray-500 mb-6">
-            This is where your confirmation will be sent
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-xs block mb-1">Given names</label>
-              <input
-                name="givenName"
-                onChange={handleContactChange}
-                placeholder="Enter given names"
-                className="border border-gray-300 p-2 w-full text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs block mb-1">Last name</label>
-              <input
-                name="lastName"
-                onChange={handleContactChange}
-                placeholder="Enter last name"
-                className="border border-gray-300 p-2 w-full text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs block mb-1">Email</label>
-              <input
-                name="email"
-                onChange={handleContactChange}
-                placeholder="Enter email"
-                className="border border-gray-300 p-2 w-full text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs block mb-1">
-                Country / region of residence
-              </label>
-              <input
-                name="country"
-                onChange={handleContactChange}
-                placeholder="Enter country"
-                className="border border-gray-300 p-2 w-full text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6 bg-gray-100 p-4 border border-gray-300">
-            <label className="text-xs block mb-1">Phone number</label>
-            <input
-              name="phone"
-              onChange={handleContactChange}
-              placeholder="+1 (555) 000-0000"
-              className="border border-gray-300 p-2 w-full text-sm"
-            />
-          </div>
-        </div>
-
-        {/* PASSENGER SECTION */}
-        <div className="border border-gray-300 p-6">
-          <h2 className="text-sm font-medium mb-1">
-            Passenger 1
-          </h2>
-          <p className="text-xs text-gray-500 mb-6">
-            Passenger details must match your passport or photo ID
+            This is where your comfirmation will be sent
           </p>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -162,86 +121,162 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
               <label className="text-xs block mb-1">Given names</label>
             <input
               name="givenName"
-              onChange={handlePassengerChange}
-              placeholder="Enter given names"
+              placeholder="Given names"
+              onChange={handleContactChange}
               className="border border-gray-300 p-2 w-full text-sm"
             />
             </div>
+
             <div>
               <label className="text-xs block mb-1">Last name</label>
             <input
               name="lastName"
-              onChange={handlePassengerChange}
-              placeholder="Enter last name"
+              placeholder="Last name"
+              onChange={handleContactChange}
               className="border border-gray-300 p-2 w-full text-sm"
             />
             </div>
 
             <div>
-              <label className="text-xs block mb-1">Passport number</label>
+              <label className="text-xs block mb-1">Email</label>
             <input
-              name="passport"
-              onChange={handlePassengerChange}
-              placeholder="Enter Passport Number"
+              name="email"
+              placeholder="Email"
+              onChange={handleContactChange}
               className="border border-gray-300 p-2 w-full text-sm"
             />
             </div>
 
             <div>
-              <label className="text-xs block mb-1">Gender</label>
+              <label className="text-xs block mb-1">Country / region of residence</label>
             <input
-              name="gender"
-              onChange={handlePassengerChange}
-              placeholder="Enter Gender"
+              name="country"
+              placeholder="Country"
+              onChange={handleContactChange}
               className="border border-gray-300 p-2 w-full text-sm"
             />
             </div>
-            <div>
-              <label className="text-xs block mb-1">Date of Birth</label>
-            <input
-              type="date"
-              name="dob"
-              onChange={handlePassengerChange}
-              className="border border-gray-300 p-2 w-full text-sm"
-            />
-            </div>
-            <div>
-              <label className="text-xs block mb-1">Nationality</label>
-            <input
-              name="nationality"
-              onChange={handlePassengerChange}
-              placeholder="Enter Nationality"
-              className="border border-gray-300 p-2 w-full text-sm"
-            />
-          </div>
-          </div>
 
-
-          <div className="mt-6 bg-gray-100 p-4 border border-gray-300">
-            <label className="text-xs block mb-1">Phone number</label>
+            <div className="mt-6 bg-gray-100 p-4 border border-gray-300">
+              <label className="text-xs block mb-1">Phone number</label>
             <input
               name="phone"
-              onChange={handlePassengerChange}
               placeholder="+1 (555) 000-0000"
+              onChange={handleContactChange}
               className="border border-gray-300 p-2 w-full text-sm"
             />
+            </div>
           </div>
         </div>
 
-        {/* CONFIRM BUTTON */}
+        {/* PASSENGERS (FIXED) */}
+        {passenger.map((p, index) => (
+          <div key={index} className="border border-gray-300 p-6 mb-6">
+            <h2 className="text-sm font-medium mb-1">
+              Passenger {index + 1}
+            </h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Passenger details must match your passport or photo ID
+              </p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <label className="text-xs block mb-1">Given names</label>
+              
+              <input
+                name="givenName"
+                value={p.givenName}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="Enter given names"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div>
+              <label className="text-xs block mb-1">Last name</label>
+              <input
+                name="lastName"
+                value={p.lastName}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="Enter last name"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div>
+              <label className="text-xs block mb-1">Passport number</label>
+              <input
+                name="passport"
+                value={p.passport}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="Enter Passport Number"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div>
+              <label className="text-xs block mb-1">Gender on ID</label>  
+              <input
+                name="gender"
+                value={p.gender}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="Enter Gender"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div>
+              <label className="text-xs block mb-1">Date of Birth</label>
+              <input
+                type="date"
+                name="dob"
+                value={p.dob}
+                onChange={(e) => handlePassengerChange(index, e)}
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div>
+              <label className="text-xs block mb-1">  Nationality</label>
+              <input
+                name="nationality"
+                value={p.nationality}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="Enter Nationality"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+
+              <div className="md:col-span-2 mt-6 bg-gray-100 p-4 border border-gray-300">
+              <label className="text-xs block mb-1">Phone number</label>
+              <input
+                name="phone"
+                value={p.phone}
+                onChange={(e) => handlePassengerChange(index, e)}
+                placeholder="+1 (555) 000-0000"
+                className="border border-gray-300 p-2 w-full text-sm"
+              />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* BUTTONS */}
         <div className="flex justify-between items-center mt-10">
           <button
-            onClick={() => navigate("-1")}
+            onClick={() => navigate(-1)}
             className="text-sm text-gray-500 hover:underline"
           >
             Cancel Booking
           </button>
+
           <button
-            
+            onClick={handleAddPassenger}
             className="bg-black text-white px-8 py-2 text-sm"
-            >
+          >
             Add Passenger
           </button>
+
           <button
             onClick={handleConfirm}
             className="bg-black text-white px-8 py-2 text-sm"

@@ -1,16 +1,80 @@
 import { useState } from "react";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+const isValidDateString = (value) => {
+  if (!DATE_RE.test(value)) return false;
+
+  const [y, m, d] = value.split("-").map(Number);
+
+  // Build UTC date to avoid local timezone day-shift bugs
+  const dt = new Date(Date.UTC(y, m - 1, d));
+
+  return (
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === m - 1 &&
+    dt.getUTCDate() === d
+  );
+};
+
+const sanitizeDateInput = (value) => value.replace(/[^\d-]/g, "").slice(0, 10);
+
+// NEW: accepts yyyy-m-d / yyyy-mm-d / yyyy-m-dd and normalizes to yyyy-mm-dd
+const normalizeDateInput = (value) => {
+  const v = value.trim();
+  const m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!m) return v;
+  const [, y, mo, d] = m;
+  return `${y}-${String(Number(mo)).padStart(2, "0")}-${String(Number(d)).padStart(2, "0")}`;
+};
+
 const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
-    dates: "Jan 15 - Jan 22",
+    departureDate: "2026-03-10",
+    returnDate: "2026-03-15",
     passengers: 1,
   });
+  const [dateError, setDateError] = useState("");
 
   const handleSearch = (e) => {
     e.preventDefault();
-    onSearch(searchData);
+    setDateError("");
+
+    const normalizedDeparture = normalizeDateInput(searchData.departureDate);
+    const normalizedReturn = normalizeDateInput(searchData.returnDate);
+
+    // keep state normalized
+    setSearchData((prev) => ({
+      ...prev,
+      departureDate: normalizedDeparture,
+      returnDate: normalizedReturn,
+    }));
+
+    if (!isValidDateString(normalizedDeparture)) {
+      setDateError("Departure date must be YYYY-MM-DD.");
+      return;
+    }
+
+    if (tripType === "round-trip" && !isValidDateString(normalizedReturn)) {
+      setDateError("Return date must be YYYY-MM-DD.");
+      return;
+    }
+
+    const payload = {
+      origin: searchData.from.trim().toUpperCase(),
+      destination: searchData.to.trim().toUpperCase(),
+      departure_date: normalizedDeparture,
+      adults: Number(searchData.passengers),
+      trip_type: tripType,
+    };
+
+    if (tripType === "round-trip") {
+      payload.return_date = normalizedReturn;
+    }
+
+    onSearch(payload);
   };
 
   return (
@@ -99,29 +163,60 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
             />
           </div>
 
-          {/* Fix Part */}
-
-          <div className="md:col-span-2 max-w-[200px]">
+          <div className="md:col-span-2">
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Dates
+              Departure date
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Jan 15 - Jan 22"
-                value={searchData.dates}
-                onChange={(e) =>
-                  setSearchData({ ...searchData, dates: e.target.value })
-                }
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                ▼
-              </span>
-            </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="YYYY-MM-DD"
+              value={searchData.departureDate}
+              onChange={(e) =>
+                setSearchData({
+                  ...searchData,
+                  departureDate: sanitizeDateInput(e.target.value),
+                })
+              }
+              onBlur={() =>
+                setSearchData((prev) => ({
+                  ...prev,
+                  departureDate: normalizeDateInput(prev.departureDate),
+                }))
+              }
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+              required
+            />
           </div>
 
-          {/* Number of Passengers */}
+          {tripType === "round-trip" && (
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Return date
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="YYYY-MM-DD"
+                value={searchData.returnDate}
+                onChange={(e) =>
+                  setSearchData({
+                    ...searchData,
+                    returnDate: sanitizeDateInput(e.target.value),
+                  })
+                }
+                onBlur={() =>
+                  setSearchData((prev) => ({
+                    ...prev,
+                    returnDate: normalizeDateInput(prev.returnDate),
+                  }))
+                }
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
+                required
+              />
+            </div>
+          )}
+
           <div className="md:col-span-2 max-w-[180px]">
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Number of passengers
@@ -162,8 +257,6 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
             </div>
           </div>
 
-          {/* Fix Part */}
-
           <div className="md:col-span-1">
             <button
               type="submit"
@@ -186,6 +279,8 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
             </button>
           </div>
         </form>
+
+        {dateError && <p className="mt-3 text-sm text-red-600">{dateError}</p>}
       </div>
     </div>
   );

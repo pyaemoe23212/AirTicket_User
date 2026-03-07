@@ -112,8 +112,8 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
           onSubmit={handleSearch}
           className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
         >
-          <div className="md:col-span-3">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-500 mb-1">
               Leaving from
             </label>
             <input
@@ -148,7 +148,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
             </button>
           </div>
 
-          <div className="md:col-span-3">
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Going to
             </label>

@@ -6,11 +6,14 @@ const ResultsSection = ({
   previousFlight,
   showSelectedPreviousFlight,
   onSelectFlight,
+  flights = [],
+  loading = false,
+  error = "",
+  onRetry,
 }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 mt-12 pb-20">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar */}
         <div className="lg:col-span-1">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">{pageTitle}</h2>
           <div className="bg-white rounded-lg shadow p-6 sticky top-24">
@@ -23,7 +26,6 @@ const ResultsSection = ({
           </div>
         </div>
 
-        {/* Flight Cards */}
         <div className="lg:col-span-3">
           {showSelectedPreviousFlight && previousFlight && (
             <div className="mb-8 p-4 bg-blue-50 rounded-lg">
@@ -42,7 +44,7 @@ const ResultsSection = ({
               <FlightCard
                 key={flight.id}
                 flight={flight}
-                onSelect={onSelectFlight} 
+                onSelect={onSelectFlight} // ✅ correct
               />
             ))}
           </div>

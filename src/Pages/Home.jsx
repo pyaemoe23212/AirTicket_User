@@ -3,7 +3,7 @@ import SearchForm from "../components/SearchForm";
 import AboutSection from "../components/AboutSection";
 import AdvertisementSection from "../components/AdvertisementSection";
 import {useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 
 function Home(){

@@ -1,32 +1,46 @@
 import { useState } from "react";
-import { loginUser, registerUser, forgotPassword } from "../utils/api"; // Import API functions
+import { loginUser, registerUser } from "../utils/api";
 
-export default function SignIn({ open, setOpen }) {
-  const [screen, setScreen] = useState("login"); // login | register | forgot
+export default function SignIn({ open = true, setOpen }) {
+  const [screen, setScreen] = useState("login");
   const [formData, setFormData] = useState({
+    full_name: "",
+    phone: "",
     email: "",
-    username: "",
     password: "",
-    confirmPassword: "", // For register
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const isModal = typeof setOpen === "function";
+  if (isModal && !open) return null;
+
+  const close = () => {
+    if (isModal) setOpen(false);
+  };
+
+  const onChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const saveToken = (data) => {
+    const token = data?.token || data?.access_token;
+    if (!token) throw new Error("Token not found in response");
+    localStorage.setItem("authToken", token);
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const data = await loginUser(formData.email, formData.password);
-      localStorage.setItem("authToken", data.token); // Store bearer token
-      setOpen(false); // Close modal on success
+      saveToken(data);
+      close();
+      window.location.reload();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -44,94 +58,67 @@ export default function SignIn({ open, setOpen }) {
     }
 
     try {
-      const data = await registerUser(
-        formData.username,
-        formData.email,
-        formData.password,
-      );
-      // Assuming register API returns a token for auto-login; if not, remove this line
-      if (data.token) {
-        localStorage.setItem("authToken", data.token);
+      const data = await registerUser({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.full_name,
+        phone: formData.phone,
+      });
+
+      if (data?.token || data?.access_token) {
+        saveToken(data);
+        close();
+        window.location.reload();
+      } else {
+        setScreen("login");
       }
-      setOpen(false); // Close modal on success
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
-
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      await forgotPassword(formData.email);
-      alert("Reset link sent"); // Or use a better UI notification
-      setScreen("login");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-      onClick={() => setOpen(false)}
+      className={`${isModal ? "fixed inset-0 bg-black/40" : ""} flex items-center justify-center z-50`}
+      onClick={isModal ? close : undefined}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-white w-full max-w-md rounded-lg shadow-lg p-6"
       >
-        {/* LOGIN + REGISTER TABS */}
-        {(screen === "login" || screen === "register") && (
-          <div className="flex border-b mb-6">
-            <button
-              onClick={() => setScreen("login")}
-              className={`flex-1 py-2 text-sm ${
-                screen === "login"
-                  ? "border-b-2 border-black font-semibold"
-                  : "text-gray-500"
-              }`}
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => setScreen("register")}
-              className={`flex-1 py-2 text-sm ${
-                screen === "register"
-                  ? "border-b-2 border-black font-semibold"
-                  : "text-gray-500"
-              }`}
-            >
-              Register
-            </button>
-          </div>
-        )}
+        <div className="flex border-b mb-6">
+          <button
+            onClick={() => setScreen("login")}
+            className={`flex-1 py-2 text-sm ${screen === "login" ? "border-b-2 border-black font-semibold" : "text-gray-500"}`}
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => setScreen("register")}
+            className={`flex-1 py-2 text-sm ${screen === "register" ? "border-b-2 border-black font-semibold" : "text-gray-500"}`}
+          >
+            Sign Up
+          </button>
+        </div>
 
-        {/* Error Message */}
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-        {/* ------------ LOGIN ------------ */}
         {screen === "login" && (
           <form onSubmit={handleLogin}>
             <input
               name="email"
               value={formData.email}
-              onChange={handleInputChange}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
-              placeholder="Email / Username"
+              placeholder="Email"
               required
             />
             <input
               name="password"
               value={formData.password}
-              onChange={handleInputChange}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
               type="password"
               placeholder="Password"
@@ -144,31 +131,31 @@ export default function SignIn({ open, setOpen }) {
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>
-
-            <p
-              className="text-xs text-center mt-3 cursor-pointer text-gray-600 hover:underline"
-              onClick={() => setScreen("forgot")}
-            >
-              Forgot Password?
-            </p>
           </form>
         )}
 
-        {/* ------------ REGISTER ------------ */}
         {screen === "register" && (
           <form onSubmit={handleRegister}>
             <input
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
+              name="full_name"
+              value={formData.full_name}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
-              placeholder="Username"
+              placeholder="Full Name"
+              required
+            />
+            <input
+              name="phone"
+              value={formData.phone}
+              onChange={onChange}
+              className="w-full mb-3 border p-2 rounded"
+              placeholder="Phone"
               required
             />
             <input
               name="email"
               value={formData.email}
-              onChange={handleInputChange}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
               placeholder="Email"
               required
@@ -176,7 +163,7 @@ export default function SignIn({ open, setOpen }) {
             <input
               name="password"
               value={formData.password}
-              onChange={handleInputChange}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
               type="password"
               placeholder="Password"
@@ -185,7 +172,7 @@ export default function SignIn({ open, setOpen }) {
             <input
               name="confirmPassword"
               value={formData.confirmPassword}
-              onChange={handleInputChange}
+              onChange={onChange}
               className="w-full mb-3 border p-2 rounded"
               type="password"
               placeholder="Confirm Password"
@@ -198,33 +185,6 @@ export default function SignIn({ open, setOpen }) {
             >
               {loading ? "Signing Up..." : "Sign Up"}
             </button>
-          </form>
-        )}
-
-        {/* ------------ FORGOT ------------ */}
-        {screen === "forgot" && (
-          <form onSubmit={handleForgotPassword}>
-            <input
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full mb-3 border p-2 rounded"
-              placeholder="Email"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
-            >
-              {loading ? "Sending..." : "Send Reset Link"}
-            </button>
-            <p
-              className="text-xs text-center mt-3 text-blue-600 cursor-pointer"
-              onClick={() => setScreen("login")}
-            >
-              Back to Login
-            </p>
           </form>
         )}
       </div>

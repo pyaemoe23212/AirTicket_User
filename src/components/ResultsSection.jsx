@@ -42,7 +42,7 @@ const ResultsSection = ({
               <FlightCard
                 key={flight.id}
                 flight={flight}
-                onSelect={onSelectFlight} // ✅ correct
+                onSelect={onSelectFlight} 
               />
             ))}
           </div>

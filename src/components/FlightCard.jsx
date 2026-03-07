@@ -1,42 +1,55 @@
 const FlightCard = ({ flight, onSelect }) => {
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-md transition p-6 flex items-center justify-between">
-      <div className="flex items-center space-x-6 flex-1">
-        {/* Airline Logo */}
-        <div className="bg-gray-200 border  w-16 h-16 flex items-center justify-center f">
-            <span className="text-s font-bold text-gray-400 w-13 ">Logo</span>
+    <div className="border border-gray-300 p-4 flex items-center justify-between bg-white">
+
+      {/* Left Section */}
+      <div className="flex items-center space-x-6">
+
+        {/* Logo */}
+        <div className="w-14 h-14 border bg-gray-200 flex items-center justify-center text-xs text-gray-500">
+          [LOGO]
         </div>
 
-
-        {/* Flight Details */}
+        {/* Airline Info */}
         <div>
-          <p className="font-semibold text-gray-800">{flight.airline}</p>
-          <p className="text-sm text-gray-600">{flight.flightNumber}</p>
+          <p className="text-gray-700 font-medium">{flight.airline}</p>
+          <p className="text-sm text-gray-500">{flight.flightNumber}</p>
         </div>
 
         {/* Time */}
-        <div>
-          <p className="text-lg font-semibold">{flight.departureTime} – {flight.arrivalTime}</p>
-          <p className="text-sm text-gray-600">{flight.duration}</p>
+        <div className="ml-10">
+          <p className="text-gray-700">
+            {flight.departureTime} - {flight.arrivalTime}
+          </p>
+          <p className="text-sm text-gray-500">{flight.duration}</p>
         </div>
 
-        {/* Stops & Class */}
-        <div>
-          <p className="text-gray-800 font-medium">{flight.stops}</p>
-          <p className="text-sm text-gray-600">{flight.class}</p>
+        {/* Tags */}
+        <div className="flex space-x-2 ml-10">
+          <span className="border px-2 py-1 text-xs text-gray-600">
+            {flight.stops}
+          </span>
+          <span className="border px-2 py-1 text-xs text-gray-600">
+            {flight.class}
+          </span>
         </div>
+
       </div>
 
-      {/* Price & Select */}
-      <div className="text-right">
-        <p className="text-2xl font-bold text-gray-800">${flight.price}</p>
+      {/* Right Section */}
+      <div className="flex items-center space-x-6">
+
+        <p className="text-gray-700">${flight.price}</p>
+
         <button
           onClick={() => onSelect(flight)}
-          className="mt-2 bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-900 transition"
+          className="bg-gray-700 text-white px-4 py-1 text-sm"
         >
           Select
         </button>
+
       </div>
+
     </div>
   );
 };

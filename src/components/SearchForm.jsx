@@ -32,8 +32,8 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
   const [searchData, setSearchData] = useState({
     from: "",
     to: "",
-    departureDate: "2026-03-10",
-    returnDate: "2026-03-15",
+    departureDate: "2026-04-10",
+    returnDate: "2026-04-15",
     passengers: 1,
   });
   const [dateError, setDateError] = useState("");

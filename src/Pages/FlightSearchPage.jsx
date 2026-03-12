@@ -4,7 +4,7 @@ import HeroSection from "../components/HeroSection";
 import SearchForm from "../components/SearchForm";
 import ResultsSection from "../components/ResultsSection";
 import AboutSection from "../components/AboutSection";
-import { searchFlights } from "../utils/api";
+import { searchFlights, searchRoundTripFlights } from "../utils/api";
 
 const formatTime = (iso) => {
   if (!iso) return "--:--";
@@ -122,7 +122,12 @@ const FlightSearchPage = ({
       // Always single-leg search for selection flow:
       // Departure page: RGN -> BKK
       // Return page: BKK -> RGN (swapped in buildParams when isReturnPage)
-      const res = await searchFlights(params);
+      let res;
+      if (tripType === "round-trip") {
+        res = await searchRoundTripFlights(params);
+      } else {
+        res = await searchFlights(params);
+      }
 
       setFlights(pickList(res).map(toUiFlight));
     } catch (e) {

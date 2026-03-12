@@ -40,11 +40,11 @@ const ResultsSection = ({
           )}
 
           <div className="space-y-4">
-            {mockFlights.map((flight) => (
+            {flights.map((flight) => (
               <FlightCard
                 key={flight.id}
                 flight={flight}
-                onSelect={onSelectFlight} // ✅ correct
+                onSelect={onSelectFlight} 
               />
             ))}
           </div>

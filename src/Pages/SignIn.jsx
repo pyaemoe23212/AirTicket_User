@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser, registerUser } from "../utils/api";
+import { useAuth } from "../hooks/useAuth";
 
 export default function SignIn({ open = true, setOpen }) {
   const [screen, setScreen] = useState("login");
@@ -10,7 +10,7 @@ export default function SignIn({ open = true, setOpen }) {
     password: "",
     confirmPassword: "",
   });
-  const [loading, setLoading] = useState(false);
+  const { login, register, loading, error: authError } = useAuth();
   const [error, setError] = useState("");
 
   const isModal = typeof setOpen === "function";
@@ -24,60 +24,42 @@ export default function SignIn({ open = true, setOpen }) {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const saveToken = (data) => {
-    const token = data?.token || data?.access_token;
-    if (!token) throw new Error("Token not found in response");
-    localStorage.setItem("authToken", token);
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
     try {
-      const data = await loginUser(formData.email, formData.password);
-      saveToken(data);
+      await login(formData.email, formData.password);
       close();
       window.location.reload();
     } catch (err) {
       setError(err.message || "Login failed");
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
-      setLoading(false);
       return;
     }
 
     try {
-      const data = await registerUser({
+      await register({
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
         phone: formData.phone,
       });
-
-      if (data?.token || data?.access_token) {
-        saveToken(data);
-        close();
-        window.location.reload();
-      } else {
-        setScreen("login");
-      }
+      close();
+      window.location.reload();
     } catch (err) {
       setError(err.message || "Signup failed");
-    } finally {
-      setLoading(false);
     }
   };
+
+  const displayError = error || authError;
 
   return (
     <div
@@ -103,7 +85,7 @@ export default function SignIn({ open = true, setOpen }) {
           </button>
         </div>
 
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {displayError && <p className="text-red-500 text-sm mb-4">{displayError}</p>}
 
         {screen === "login" && (
           <form onSubmit={handleLogin}>

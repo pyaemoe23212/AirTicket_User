@@ -42,7 +42,7 @@ const ResultsSection = ({
           <div className="space-y-4">
             {flights.map((flight) => (
               <FlightCard
-                key={flight.id}
+                key={flight.bundle_key}
                 flight={flight}
                 onSelect={onSelectFlight} 
               />

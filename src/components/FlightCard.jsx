@@ -26,6 +26,7 @@ const FlightCard = ({ flight, onSelect }) => {
 
   // Fallback values if flightData is undefined
   const airline = flightData?.airline || "Unknown Airline";
+  const airline_code = flightData?.airline_code || "XX";
   const flightNumber = flightData?.flight_number || "-";
   const departureTime = formatTime(flightData?.departure_time);
   const arrivalTime = formatTime(flightData?.arrival_time);
@@ -43,7 +44,7 @@ const FlightCard = ({ flight, onSelect }) => {
         {/* Airline Info */}
         <div>
           <p className="text-gray-700 font-medium">{airline}</p>
-          <p className="text-sm text-gray-500">{flightNumber}</p>
+          <p className="text-sm text-gray-500">{airline_code}-{flightNumber}</p>
         </div>
 
         {/* Time */}

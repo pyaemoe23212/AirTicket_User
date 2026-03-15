@@ -31,10 +31,10 @@ const ResultsSection = ({
             <div className="mb-8 p-4 bg-blue-50 rounded-lg">
               <p className="font-semibold">Selected flight:</p>
               <p>
-                {previousFlight.airline} • {previousFlight.flightNumber}
+                {previousFlight.flight_snapshot?.airline} • {previousFlight.flight_snapshot?.flight_number}
               </p>
               <p>
-                {previousFlight.departureTime} – {previousFlight.arrivalTime}
+                {previousFlight.flight_snapshot?.departure_time} – {previousFlight.flight_snapshot?.arrival_time}
               </p>
             </div>
           )}

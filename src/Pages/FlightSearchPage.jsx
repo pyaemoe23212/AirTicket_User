@@ -21,45 +21,79 @@ const toUiFlight = (f, index) => {
   // round-trip bundle shape
   if (f?.outbound && f?.inbound) {
     return {
-      id: f.bundle_key || `BUNDLE-${index}`,
-      bundleKey: f.bundle_key,
+      type: "ROUND_TRIP",
       adults: f.adults,
-      airline: f.outbound.airline || "Unknown Airline",
-      flightNumber: f.outbound.flight_number || "-",
-      departureTime: formatTime(f.outbound.departure_time),
-      arrivalTime: formatTime(f.outbound.arrival_time),
-      duration: f.outbound.duration_minutes
-        ? `${f.outbound.duration_minutes} min`
-        : "-",
-      stops: 0,
-      class: "Economy",
-      price: f.final_price_usd ?? f.base_price_usd ?? 0,
-      priceMMK: f.final_price_mmk ?? null,
-      origin: f.outbound.origin,
-      destination: f.outbound.destination,
-      outbound: f.outbound,
-      inbound: f.inbound,
+      bundle_key: f.bundle_key,
+      flight_snapshot: {
+        bundle_key: f.bundle_key,
+        adults: f.adults,
+        outbound: {
+          airline: f.outbound.airline,
+          airline_code: f.outbound.airline_code,
+          flight_number: f.outbound.flight_number,
+          origin: f.outbound.origin,
+          destination: f.outbound.destination,
+          route: f.outbound.route,
+          departure_time: f.outbound.departure_time,
+          arrival_time: f.outbound.arrival_time,
+          duration_minutes: f.outbound.duration_minutes,
+        },
+        inbound: {
+          airline: f.inbound.airline,
+          airline_code: f.inbound.airline_code,
+          flight_number: f.inbound.flight_number,
+          origin: f.inbound.origin,
+          destination: f.inbound.destination,
+          route: f.inbound.route,
+          departure_time: f.inbound.departure_time,
+          arrival_time: f.inbound.arrival_time,
+          duration_minutes: f.inbound.duration_minutes,
+        },
+        base_price_usd: f.base_price_usd,
+        final_price_usd: f.final_price_usd,
+        final_price_mmk: f.final_price_mmk,
+        price_estimate_min_usd: f.price_estimate_min_usd,
+        price_estimate_max_usd: f.price_estimate_max_usd,
+        price_estimate_min_mmk: f.price_estimate_min_mmk,
+        price_estimate_max_mmk: f.price_estimate_max_mmk,
+        requires_admin_confirmation: f.requires_admin_confirmation,
+      },
+      final_price_usd: f.final_price_usd,
+      final_price_mmk: f.final_price_mmk,
     };
   }
 
   // one-way shape
   return {
-    id:
-      f.id ||
-      f.flight_id ||
-      f.external_flight_id ||
-      `${f.flight_number || "F"}-${index}`,
-    airline: f.airline || f.airline_name || "Unknown Airline",
-    flightNumber: f.flightNumber || f.flight_number || "-",
-    departureTime: formatTime(f.departureTime || f.departure_time),
-    arrivalTime: formatTime(f.arrivalTime || f.arrival_time),
-    duration:
-      f.duration || (f.duration_minutes ? `${f.duration_minutes} min` : "-"),
-    stops: f.stops ?? f.stop_count ?? 0,
-    class: f.class || f.cabin_class || "Economy",
-    price: f.price ?? f.final_price_usd ?? f.fare ?? f.amount ?? 0,
-    origin: f.origin || f.from,
-    destination: f.destination || f.to,
+    type: "ONE_WAY",
+    adults: f.adults,
+    bundle_key: f.external_flight_id,
+    flight_snapshot: {
+      external_flight_id: f.external_flight_id,
+      airline: f.airline,
+      airline_code: f.airline_code,
+      flight_number: f.flight_number,
+      origin: f.origin,
+      destination: f.destination,
+      route: f.route,
+      departure_time: f.departure_time,
+      arrival_time: f.arrival_time,
+      duration_minutes: f.duration_minutes,
+      baggage_carry_on_kg: f.baggage_carry_on_kg,
+      baggage_checked_kg: f.baggage_checked_kg,
+      baggage_fee: f.baggage_fee,
+      baggage_info_url: f.baggage_info_url,
+      base_price_usd: f.base_price_usd,
+      final_price_usd: f.final_price_usd,
+      final_price_mmk: f.final_price_mmk,
+      price_estimate_min_usd: f.price_estimate_min_usd,
+      price_estimate_max_usd: f.price_estimate_max_usd,
+      price_estimate_min_mmk: f.price_estimate_min_mmk,
+      price_estimate_max_mmk: f.price_estimate_max_mmk,
+      requires_admin_confirmation: f.requires_admin_confirmation,
+    },
+    final_price_usd: f.final_price_usd,
+    final_price_mmk: f.final_price_mmk,
   };
 };
 

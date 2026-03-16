@@ -30,12 +30,25 @@ const ResultsSection = ({
           {showSelectedPreviousFlight && previousFlight && (
             <div className="mb-8 p-4 bg-blue-50 rounded-lg">
               <p className="font-semibold">Selected flight:</p>
-              <p>
-                {previousFlight.flight_snapshot?.airline} • {previousFlight.flight_snapshot?.flight_number}
-              </p>
-              <p>
-                {previousFlight.flight_snapshot?.departure_time} – {previousFlight.flight_snapshot?.arrival_time}
-              </p>
+              {previousFlight.type === "ROUND_TRIP" ? (
+                <>
+                  <p>
+                    {previousFlight.flight_snapshot?.outbound?.airline} • {previousFlight.flight_snapshot?.outbound?.flight_number}
+                  </p>
+                  <p>
+                    {previousFlight.flight_snapshot?.outbound?.departure_time} – {previousFlight.flight_snapshot?.outbound?.arrival_time}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    {previousFlight.flight_snapshot?.airline} • {previousFlight.flight_snapshot?.flight_number}
+                  </p>
+                  <p>
+                    {previousFlight.flight_snapshot?.departure_time} – {previousFlight.flight_snapshot?.arrival_time}
+                  </p>
+                </>
+              )}
             </div>
           )}
 

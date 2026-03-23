@@ -1,0 +1,70 @@
+import { mockFlights } from "../data/mockFlights";
+import FlightCard from "./FlightCard";
+
+const ResultsSection = ({
+  pageTitle,
+  previousFlight,
+  showSelectedPreviousFlight,
+  onSelectFlight,
+  flights = [],
+  loading = false,
+  error = "",
+  onRetry,
+}) => {
+  return (
+    <div className="max-w-7xl mx-auto px-4 mt-12 pb-20">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-1">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">{pageTitle}</h2>
+          <div className="bg-white rounded-lg shadow p-6 sticky top-24">
+            <h3 className="font-semibold text-gray-800 mb-4">Message us</h3>
+            <p className="text-sm text-gray-600 mb-2">For more information</p>
+            <button className="text-blue-600 text-sm font-medium hover:underline">
+              Call us
+            </button>
+            <p className="text-sm text-gray-600 mt-4">For more information</p>
+          </div>
+        </div>
+
+        <div className="lg:col-span-3">
+          {showSelectedPreviousFlight && previousFlight && (
+            <div className="mb-8 p-4 bg-blue-50 rounded-lg">
+              <p className="font-semibold">Selected flight:</p>
+              {previousFlight.type === "ROUND_TRIP" ? (
+                <>
+                  <p>
+                    {previousFlight.flight_snapshot?.outbound?.airline} • {previousFlight.flight_snapshot?.outbound?.flight_number}
+                  </p>
+                  <p>
+                    {previousFlight.flight_snapshot?.outbound?.departure_time} – {previousFlight.flight_snapshot?.outbound?.arrival_time}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    {previousFlight.flight_snapshot?.airline} • {previousFlight.flight_snapshot?.flight_number}
+                  </p>
+                  <p>
+                    {previousFlight.flight_snapshot?.departure_time} – {previousFlight.flight_snapshot?.arrival_time}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {flights.map((flight) => (
+              <FlightCard
+                key={flight.bundle_key}
+                flight={flight}
+                onSelect={onSelectFlight} 
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ResultsSection;

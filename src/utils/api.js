@@ -73,6 +73,11 @@ export const getMyContact = async () => {
   return response.data;
 };
 
+export const updateContact = async (contactData) => {
+  const response = await apiClient.put("/contact/me", contactData);
+  return response.data;
+};
+
 // Flight APIs
 export const searchFlights = async (searchParams) => {
   const response = await apiClient.get("/flights/search", {

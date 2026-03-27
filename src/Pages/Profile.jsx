@@ -280,7 +280,7 @@ export default function Profile() {
                 return (
                   <tr key={b.booking_id} className="border-t border-gray-200 text-gray-700">
                     <td className="p-3">
-                      <div className="max-w-[190px] break-all text-xs">{b.booking_id || "-"}</div>
+                      <div className="max-w-[190px] break-all text-xs">{b.booking_code || "-"}</div>
                     </td>
                     <td className="p-3">{f.flightNumber}</td>
                     <td className="p-3">{f.route}</td>

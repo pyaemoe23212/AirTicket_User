@@ -63,7 +63,7 @@ export const getBookingDetail = async (bookingId) => {
 };
 
 // Contact APIs
-export const createOrUpdateContact = async (contactData) => {
+export const createContact = async (contactData) => {
   const response = await apiClient.post("/contact/", contactData);
   return response.data;
 };

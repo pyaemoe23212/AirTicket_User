@@ -1,6 +1,6 @@
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyContact, createOrUpdateContact, updateContact, createBooking, addPassengers } from "../utils/api";
+import { getMyContact, createContact, updateContact, createBooking, addPassengers } from "../utils/api";
 
 export default function BookingForm({ selectedFlights = [], tripType }) {
   const navigate = useNavigate();
@@ -41,11 +41,10 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
 
   // Create booking on page load
   useEffect(() => {
-    if (createdRef.current) return; // Skip if already created
+    if (createdRef.current) return;
     createdRef.current = true;
 
     const createInitialBooking = async () => {
-      // If booking already exists, don't create again
       if (booking) return;
       
       try {
@@ -59,10 +58,8 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
           return;
         }
 
-        // Extract flight_snapshot
         const flightSnapshot = outboundFlight.flight_snapshot || outboundFlight;
 
-        // Create booking payload
         const bookingPayload = {
           type: outboundFlight.type || (tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY"),
           adults: outboundFlight.adults || 1,
@@ -91,7 +88,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
     };
 
     createInitialBooking();
-  }, [selectedFlights, tripType, booking]); // Add 'booking' to dependencies
+  }, [selectedFlights, tripType, booking]);
 
   // Fetch contact on page load
   useEffect(() => {
@@ -124,7 +121,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
     setError(null);
   };
 
-  const handleSaveContact = async () => {
+  const handleCreateContact = async () => {
     try {
       setIsSavingContact(true);
       setError(null);
@@ -137,16 +134,35 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
         phone_number: contact.phone,
       };
       
-      if (contactExists) {
-        await updateContact(contactData);
-      } else {
-        await createOrUpdateContact(contactData);
-      }
+      await createContact(contactData);
       
       setContactExists(true);
       setIsEditMode(false);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to save contact");
+      setError(err.response?.data?.message || "Failed to create contact");
+    } finally {
+      setIsSavingContact(false);
+    }
+  };
+
+  const handleUpdateContact = async () => {
+    try {
+      setIsSavingContact(true);
+      setError(null);
+      
+      const contactData = {
+        given_name: contact.givenName,
+        last_name: contact.lastName,
+        email: contact.email,
+        country_of_residence: contact.country,
+        phone_number: contact.phone,
+      };
+      
+      await updateContact(contactData);
+      
+      setIsEditMode(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update contact");
     } finally {
       setIsSavingContact(false);
     }
@@ -188,7 +204,6 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
       setIsSavingContact(true);
       setError(null);
 
-      // Prepare passengers payload - wrap in object
       const passengersPayload = {
         passengers: passenger.map((p) => ({
           booking_id: booking.booking_id,
@@ -206,13 +221,11 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
       console.log("Booking ID:", booking.booking_id);
       console.log(JSON.stringify(passengersPayload, null, 2));
 
-      // Add passengers to booking
       const passengersResponse = await addPassengers(booking.booking_id, passengersPayload);
       
       console.log("=== PASSENGERS ADDED ===");
       console.log(passengersResponse);
 
-      // Navigate to profile
       navigate("/profile");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add passengers");
@@ -223,7 +236,6 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
     }
   };
 
-  // Show loading state while booking is being created
   if (bookingLoading) {
     return (
       <div className="bg-gray-100 min-h-screen py-10 flex items-center justify-center">
@@ -346,8 +358,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                     value={contact.givenName}
                     placeholder="Enter given names"
                     onChange={handleContactChange}
-                    disabled={!isEditMode || isSavingContact}
-                    readOnly={!isEditMode}
+                    disabled={isSavingContact || (contactExists && !isEditMode)}
                     className="border border-gray-300 p-2 w-full text-sm disabled:bg-gray-100"
                   />
                 </div>
@@ -359,8 +370,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                     value={contact.lastName}
                     placeholder="Enter last name"
                     onChange={handleContactChange}
-                    disabled={!isEditMode || isSavingContact}
-                    readOnly={!isEditMode}
+                    disabled={isSavingContact || (contactExists && !isEditMode)}
                     className="border border-gray-300 p-2 w-full text-sm disabled:bg-gray-100"
                   />
                 </div>
@@ -372,8 +382,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                     value={contact.email}
                     placeholder="Enter email"
                     onChange={handleContactChange}
-                    disabled={!isEditMode || isSavingContact}
-                    readOnly={!isEditMode}
+                    disabled={isSavingContact || (contactExists && !isEditMode)}
                     className="border border-gray-300 p-2 w-full text-sm disabled:bg-gray-100"
                   />
                 </div>
@@ -387,8 +396,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                     value={contact.country}
                     placeholder="Enter Country"
                     onChange={handleContactChange}
-                    disabled={!isEditMode || isSavingContact}
-                    readOnly={!isEditMode}
+                    disabled={isSavingContact || (contactExists && !isEditMode)}
                     className="border border-gray-300 p-2 w-full text-sm disabled:bg-gray-100"
                   />
                 </div>
@@ -400,8 +408,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                     value={contact.phone}
                     placeholder="+1 (555) 000-0000"
                     onChange={handleContactChange}
-                    disabled={!isEditMode || isSavingContact}
-                    readOnly={!isEditMode}
+                    disabled={isSavingContact || (contactExists && !isEditMode)}
                     className="border border-gray-300 p-2 w-full text-sm disabled:bg-gray-100"
                   />
                 </div>
@@ -431,18 +438,18 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                 </div>
               )}
 
-              {!contactExists && !isEditMode && (
+              {!contactExists && (
                 <button
-                  onClick={handleSaveContact}
+                  onClick={handleCreateContact}
                   disabled={isSavingContact}
                   className="mt-4 bg-blue-600 text-white px-6 py-2 text-sm disabled:bg-gray-400"
                 >
                   {isSavingContact ? "Saving..." : "Create Contact"}
                 </button>
               )}
-              {isEditMode && (
+              {contactExists && isEditMode && (
                 <button
-                  onClick={handleSaveContact}
+                  onClick={handleUpdateContact}
                   disabled={isSavingContact}
                   className="mt-4 bg-blue-600 text-white px-6 py-2 text-sm disabled:bg-gray-400"
                 >

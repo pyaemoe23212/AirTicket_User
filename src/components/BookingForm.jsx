@@ -501,7 +501,7 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
                   className="border border-gray-300 p-2 w-full text-sm"
                 />
               </div>
-
+              
               <div>
                 <label className="text-xs block mb-1">Gender on ID</label>
                 <input

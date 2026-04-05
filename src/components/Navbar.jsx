@@ -1,23 +1,30 @@
 // src/components/NavBar.jsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import SignIn from "../Pages/SignIn";
 
 const NavBar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
 
   // Check login status on mount and when modal state changes
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     setIsLoggedIn(!!token);
-  }, [isLoginOpen]); // Re-check when modal opens/closes
+  }, [isLoginOpen]);
+
+  // Close modal when navigating to auth pages
+  useEffect(() => {
+    const authPages = ["/forgot-password", "/reset-password", "/verify-email"];
+    if (authPages.includes(location.pathname)) {
+      setIsLoginOpen(false);
+    }
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     setIsLoggedIn(false);
-    // Optional: Redirect to home or close modals
-    // window.location.href = "/"; // Uncomment if you want to redirect
   };
 
   return (
@@ -39,9 +46,8 @@ const NavBar = () => {
                 <Link
                   to="/profile"
                   className="w-8 h-8 flex items-center justify-center rounded-full border text-gray-700 hover:bg-gray-100"
-                  title="Profile" // Tooltip for accessibility
+                  title="Profile"
                 >
-                  {/* Simple user icon SVG */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

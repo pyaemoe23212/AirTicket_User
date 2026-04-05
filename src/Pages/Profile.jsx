@@ -1,25 +1,32 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { getUserBookings } from "../utils/api";
+import { getCustomerMe, getUserBookings } from "../utils/api";
 
 export default function Profile() {
+  const [customer, setCustomer] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchProfileData = async () => {
       try {
-        const data = await getUserBookings();
-        setBookings(Array.isArray(data) ? data : []);
+        const [customerData, bookingsData] = await Promise.all([
+          getCustomerMe(),
+          getUserBookings(),
+        ]);
+
+        setCustomer(customerData || null);
+        setBookings(Array.isArray(bookingsData) ? bookingsData : []);
       } catch (error) {
-        console.error("Failed to fetch bookings:", error);
+        console.error("Failed to fetch profile data:", error);
+        setCustomer(null);
         setBookings([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBookings();
+    fetchProfileData();
   }, []);
 
   const toNumber = (value) => {
@@ -34,6 +41,13 @@ export default function Profile() {
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return value;
     return d.toLocaleString();
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "-";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleDateString();
   };
 
   const formatDuration = (minutes) => {
@@ -159,7 +173,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-6xl bg-white px-6 py-8 text-sm text-gray-600 md:px-10">
-        Loading bookings...
+        Loading profile...
       </div>
     );
   }
@@ -187,8 +201,10 @@ export default function Profile() {
         <div className="flex items-center gap-4">
           <div className="h-14 w-14 min-w-[56px] rounded-full border border-gray-400 bg-gray-300" />
           <div>
-            <h2 className="text-3xl font-normal leading-tight text-gray-800">Sarah Johnson</h2>
-            <p className="mt-1 text-sm text-gray-500">sarah.johnson@airline.com</p>
+            <h2 className="text-3xl font-normal leading-tight text-gray-800">
+              {customer?.full_name || "Customer"}
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">{customer?.email || "-"}</p>
           </div>
         </div>
       </div>
@@ -199,22 +215,22 @@ export default function Profile() {
         <div className="grid grid-cols-1 gap-x-14 gap-y-5 md:grid-cols-2">
           <div>
             <p className="mb-1 text-xs text-gray-500">Customer ID</p>
-            <p className="text-base text-gray-800">USR-001</p>
+            <p className="text-base text-gray-800">{customer?.id || "-"}</p>
           </div>
 
           <div>
             <p className="mb-1 text-xs text-gray-500">Email Address</p>
-            <p className="text-base text-gray-800">sarah.johnson@airline.com</p>
+            <p className="text-base text-gray-800">{customer?.email || "-"}</p>
           </div>
 
           <div>
             <p className="mb-1 text-xs text-gray-500">Phone Number</p>
-            <p className="text-base text-gray-800">+1 (555) 123-4567</p>
+            <p className="text-base text-gray-800">{customer?.phone || "-"}</p>
           </div>
 
           <div>
             <p className="mb-1 text-xs text-gray-500">Registration Date</p>
-            <p className="text-base text-gray-800">Jan 15, 2024</p>
+            <p className="text-base text-gray-800">{formatDate(customer?.created_at)}</p>
           </div>
         </div>
       </section>

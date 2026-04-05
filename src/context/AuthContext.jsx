@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem("authToken", authToken);
       setToken(authToken);
-      setUser(data.user || { email: payload.email });
+      setUser(data.user || { email: payload.email, is_email_verified: false });
       return data;
     } catch (err) {
       setError(err.message || "Registration failed");

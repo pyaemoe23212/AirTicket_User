@@ -1,10 +1,96 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getCustomerMe, updateCustomerMe } from "../utils/api";
+
+function splitFullName(fullName = "") {
+  const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return { firstName: "", lastName: "" };
+  }
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "" };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
 
 function EditInfo() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      try {
+        const customer = await getCustomerMe();
+        const { firstName, lastName } = splitFullName(customer?.full_name);
+
+        setFormData({
+          firstName,
+          lastName,
+          email: customer?.email || "",
+          phone: customer?.phone || "",
+        });
+      } catch (err) {
+        setError(err?.response?.data?.message || err.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomer();
+  }, []);
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setSuccess("");
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    const full_name = [formData.firstName, formData.lastName]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(" ");
+
+    try {
+      await updateCustomerMe({
+        full_name,
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+      });
+
+      setSuccess("Profile updated successfully");
+      navigate("/profile");
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="max-w-4xl mx-auto p-8 text-sm text-gray-600">Loading profile...</div>;
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-8">
-      
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Edit Profile</h1>
         <p className="text-sm text-gray-500">
@@ -12,60 +98,72 @@ function EditInfo() {
         </p>
       </div>
 
-      <div className="border rounded p-6 bg-white">
+      <form onSubmit={handleSubmit} className="border rounded p-6 bg-white">
         <h2 className="font-medium mb-6">Personal Information</h2>
 
+        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {success && <p className="mb-4 text-sm text-green-600">{success}</p>}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* First Name */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label htmlFor="firstName" className="block text-sm text-gray-600 mb-1">
               First Name
             </label>
             <input
+              id="firstName"
+              name="firstName"
               type="text"
-              defaultValue="Sarah"
+              value={formData.firstName}
+              onChange={onChange}
               className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
 
-          {/* Last Name */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label htmlFor="lastName" className="block text-sm text-gray-600 mb-1">
               Last Name
             </label>
             <input
+              id="lastName"
+              name="lastName"
               type="text"
-              defaultValue="Johnson"
+              value={formData.lastName}
+              onChange={onChange}
               className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label htmlFor="email" className="block text-sm text-gray-600 mb-1">
               Email Address
             </label>
             <input
+              id="email"
+              name="email"
               type="email"
-              defaultValue="sarah.johnson@airline.com"
+              value={formData.email}
+              onChange={onChange}
               className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              required
             />
           </div>
 
-          {/* Phone */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label htmlFor="phone" className="block text-sm text-gray-600 mb-1">
               Phone Number
             </label>
             <input
+              id="phone"
+              name="phone"
               type="text"
-              defaultValue="+1 (555) 123-4567"
+              value={formData.phone}
+              onChange={onChange}
               className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              required
             />
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-4 mt-8">
           <Link
             to="/profile"
@@ -75,12 +173,14 @@ function EditInfo() {
           </Link>
 
           <button
-            className="bg-black text-white px-5 py-2 rounded text-sm hover:bg-gray-800"
+            type="submit"
+            disabled={saving}
+            className="bg-black text-white px-5 py-2 rounded text-sm hover:bg-gray-800 disabled:opacity-50"
           >
-            Save Changes
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

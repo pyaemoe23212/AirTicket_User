@@ -1,4 +1,3 @@
-import { mockFlights } from "../data/mockFlights";
 import FlightCard from "./FlightCard";
 
 const ResultsSection = ({

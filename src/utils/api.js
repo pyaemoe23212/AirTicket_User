@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Create axios instance
 const apiClient = axios.create({
@@ -94,8 +94,37 @@ export const searchRoundTripFlights = async (searchParams) => {
 };
 
 export const forgotPassword = async (email) => {
-  const response = await apiClient.post("/auth/customer/forgot-password", {
+  const response = await apiClient.post("/auth/forgot-password", {
     email,
   });
+  return response.data;
+};
+
+export const resetPassword = async (token, new_password) => {
+  const response = await apiClient.post("/auth/reset-password", {
+    token,
+    new_password,
+  });
+  return response.data;
+};
+
+export const getCustomerMe = async () => {
+  const response = await apiClient.get("/customer/me");
+  return response.data;
+};
+
+export const updateCustomerMe = async (payload) => {
+  const response = await apiClient.patch("/customer/me", payload);
+  return response.data;
+};
+
+// Email Verification APIs
+export const resendVerificationEmail = async (payload) => {
+  const response = await apiClient.post("/auth/resend-verification", payload);
+  return response.data;
+};
+
+export const verifyEmail = async (token) => {
+  const response = await apiClient.post("/auth/verify-email", { token });
   return response.data;
 };

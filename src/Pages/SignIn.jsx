@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { resendVerificationEmail } from "../utils/api";
 
 export default function SignIn({ open = true, setOpen }) {
   const [screen, setScreen] = useState("login");
@@ -12,6 +14,8 @@ export default function SignIn({ open = true, setOpen }) {
   });
   const { login, register, loading, error: authError } = useAuth();
   const [error, setError] = useState("");
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const isModal = typeof setOpen === "function";
   if (isModal && !open) return null;
@@ -21,7 +25,8 @@ export default function SignIn({ open = true, setOpen }) {
   };
 
   const onChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = async (e) => {
@@ -52,10 +57,24 @@ export default function SignIn({ open = true, setOpen }) {
         full_name: formData.full_name,
         phone: formData.phone,
       });
-      close();
-      window.location.reload();
+      setVerificationPending(true);
+      setScreen("verify");
     } catch (err) {
       setError(err.message || "Signup failed");
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setError("");
+    try {
+      await resendVerificationEmail({ email: formData.email });
+      setError("");
+      alert("Verification email sent! Please check your inbox.");
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Failed to resend email");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -63,112 +82,240 @@ export default function SignIn({ open = true, setOpen }) {
 
   return (
     <div
-      className={`${isModal ? "fixed inset-0 bg-black/40" : ""} flex items-center justify-center z-50`}
+      className={`${isModal ? "fixed inset-0 bg-black/50 backdrop-blur-sm" : ""} flex items-center justify-center z-50 p-4`}
       onClick={isModal ? close : undefined}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-md rounded-lg shadow-lg p-6"
+        className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
       >
-        <div className="flex border-b mb-6">
+
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 bg-gray-50">
           <button
-            onClick={() => setScreen("login")}
-            className={`flex-1 py-2 text-sm ${screen === "login" ? "border-b-2 border-black font-semibold" : "text-gray-500"}`}
+            onClick={() => {
+              setScreen("login");
+              setError("");
+            }}
+            className={`flex-1 py-4 text-sm font-semibold transition-all ${
+              screen === "login"
+                ? "border-b-2 border-gray-900 text-gray-900 bg-white"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Sign In
           </button>
           <button
-            onClick={() => setScreen("register")}
-            className={`flex-1 py-2 text-sm ${screen === "register" ? "border-b-2 border-black font-semibold" : "text-gray-500"}`}
+            onClick={() => {
+              setScreen("register");
+              setError("");
+            }}
+            className={`flex-1 py-4 text-sm font-semibold transition-all ${
+              screen === "register"
+                ? "border-b-2 border-gray-900 text-gray-900 bg-white"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Sign Up
           </button>
         </div>
 
-        {displayError && <p className="text-red-500 text-sm mb-4">{displayError}</p>}
+        {/* Content */}
+        <div className="p-8">
+          {displayError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{displayError}</p>
+            </div>
+          )}
 
-        {screen === "login" && (
-          <form onSubmit={handleLogin}>
-            <input
-              name="email"
-              value={formData.email}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              placeholder="Email"
-              required
-            />
-            <input
-              name="password"
-              value={formData.password}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              type="password"
-              placeholder="Password"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
-            >
-              {loading ? "Signing In..." : "Sign In"}
-            </button>
-          </form>
-        )}
+          {/* Login Screen */}
+          {screen === "login" && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
 
-        {screen === "register" && (
-          <form onSubmit={handleRegister}>
-            <input
-              name="full_name"
-              value={formData.full_name}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              placeholder="Full Name"
-              required
-            />
-            <input
-              name="phone"
-              value={formData.phone}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              placeholder="Phone"
-              required
-            />
-            <input
-              name="email"
-              value={formData.email}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              placeholder="Email"
-              required
-            />
-            <input
-              name="password"
-              value={formData.password}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              type="password"
-              placeholder="Password"
-              required
-            />
-            <input
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={onChange}
-              className="w-full mb-3 border p-2 rounded"
-              type="password"
-              placeholder="Confirm Password"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
-            >
-              {loading ? "Signing Up..." : "Sign Up"}
-            </button>
-          </form>
-        )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gray-900 text-white py-2.5 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
+
+              <div className="text-center">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-gray-600 hover:text-gray-900 font-medium transition"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            </form>
+          )}
+
+          {/* Register Screen - Form */}
+          {screen === "register" && !verificationPending && (
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  name="full_name"
+                  type="text"
+                  value={formData.full_name}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="Name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="+1 (555) 123-4567"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="Email"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="Create a password"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={onChange}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gray-900 text-white py-2.5 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {loading ? "Creating Account..." : "Create Account"}
+              </button>
+
+              <p className="text-xs text-gray-600 text-center">
+                By signing up, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </form>
+          )}
+
+          {/* Verification Pending */}
+          {screen === "verify" && verificationPending && (
+            <div className="text-center py-4">
+              <div className="mb-4 text-4xl">✉️</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Verify Your Email
+              </h3>
+              <p className="text-gray-600 text-sm mb-6">
+                We've sent a verification link to <br />
+                <strong className="text-gray-900">{formData.email}</strong>
+              </p>
+              <p className="text-gray-600 text-sm mb-6">
+                Please check your inbox and click the verification link to complete your registration.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="w-full bg-gray-800 text-white py-2.5 rounded-lg font-semibold hover:bg-gray-700 disabled:opacity-50 transition mb-3"
+              >
+                {resendLoading ? "Resending..." : "Resend Verification Email"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setVerificationPending(false);
+                  setScreen("login");
+                  setFormData({
+                    full_name: "",
+                    phone: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                  });
+                }}
+                className="w-full border-2 border-gray-300 text-gray-900 py-2.5 rounded-lg font-semibold hover:bg-gray-50 transition"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

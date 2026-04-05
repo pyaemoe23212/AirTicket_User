@@ -9,6 +9,9 @@ import RoundTrip from "../Pages/RoundTrip.jsx"
 import OneWay from "../Pages/OneWay.jsx"
 import Profile from "../Pages/Profile.jsx"
 import EditInfo from "../components/EditInfo.jsx"
+import VerifyEmail from "../Pages/VerifyEmail.jsx"
+import ForgotPassword from "../Pages/ForgotPassword.jsx"
+import ResetPassword from "../Pages/ResetPassword.jsx"
 
 const router = createBrowserRouter([
   {
@@ -51,6 +54,18 @@ const router = createBrowserRouter([
       {
         path: "/edit-info",
         Component: EditInfo,
+      },
+      {
+        path: "/verify-email",
+        Component: VerifyEmail,
+      },
+      {
+        path: "/forgot-password",
+        Component: ForgotPassword,
+      },
+      {
+        path: "/reset-password",
+        Component: ResetPassword,
       },
     ],
   },

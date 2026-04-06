@@ -18,7 +18,12 @@ export default function VerifyEmailPage() {
 
     const run = async () => {
       try {
-        await verifyEmail(token);
+        const data = await verifyEmail(token);
+        // Store token if returned in verification response
+        if (data?.token || data?.access_token) {
+          const authToken = data.token || data.access_token;
+          localStorage.setItem("authToken", authToken);
+        }
         setStatus("success");
         setMessage("Your email has been verified successfully!");
       } catch (err) {

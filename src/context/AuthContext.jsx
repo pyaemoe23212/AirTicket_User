@@ -34,12 +34,8 @@ export function AuthProvider({ children }) {
     setError("");
     try {
       const data = await registerUser(payload);
-      const authToken = data.token || data.access_token;
-      if (!authToken) throw new Error("Token not found in response");
-
-      localStorage.setItem("authToken", authToken);
-      setToken(authToken);
-      setUser(data.user || { email: payload.email, is_email_verified: false });
+      // Signup doesn't return a token - user needs to verify email first
+      // Just return the response for email verification step
       return data;
     } catch (err) {
       setError(err.message || "Registration failed");

@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { getCustomerMe, getUserBookings } from "../utils/api";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -330,6 +331,7 @@ export default function Profile() {
                     <td className="p-3">
                       <button
                         type="button"
+                        onClick={() => navigate("/bookings/" + b.booking_id)}
                         className="inline-flex items-center rounded border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100"
                       >
                         View

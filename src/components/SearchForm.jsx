@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -6,8 +6,6 @@ const isValidDateString = (value) => {
   if (!DATE_RE.test(value)) return false;
 
   const [y, m, d] = value.split("-").map(Number);
-
-  // Build UTC date to avoid local timezone day-shift bugs
   const dt = new Date(Date.UTC(y, m - 1, d));
 
   return (
@@ -19,24 +17,34 @@ const isValidDateString = (value) => {
 
 const sanitizeDateInput = (value) => value.replace(/[^\d-]/g, "").slice(0, 10);
 
-// NEW: accepts yyyy-m-d / yyyy-mm-d / yyyy-m-dd and normalizes to yyyy-mm-dd
 const normalizeDateInput = (value) => {
   const v = value.trim();
   const m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (!m) return v;
-  const [, y, mo, d] = m;
-  return `${y}-${String(Number(mo)).padStart(2, "0")}-${String(Number(d)).padStart(2, "0")}`;
+  const y = m[1];
+  const mo = String(Number(m[2])).padStart(2, "0");
+  const d = String(Number(m[3])).padStart(2, "0");
+  return y + "-" + mo + "-" + d;
 };
 
-const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
-  const [searchData, setSearchData] = useState({
-    from: "",
-    to: "",
-    departureDate: "2026-04-10",
-    returnDate: "2026-04-15",
-    passengers: 1,
-  });
+const makeInitialSearchData = (initialValues) => ({
+  from: initialValues?.origin || initialValues?.from || "",
+  to: initialValues?.destination || initialValues?.to || "",
+  departureDate:
+    initialValues?.departure_date || initialValues?.departureDate || "2026-04-10",
+  returnDate:
+    initialValues?.return_date || initialValues?.returnDate || "2026-04-15",
+  passengers: Math.max(1, Number(initialValues?.adults || initialValues?.passengers || 1)),
+});
+
+const SearchForm = ({ tripType, onTripTypeChange, onSearch, initialValues }) => {
+  const [searchData, setSearchData] = useState(() => makeInitialSearchData(initialValues));
   const [dateError, setDateError] = useState("");
+
+  useEffect(() => {
+    if (!initialValues) return;
+    setSearchData(makeInitialSearchData(initialValues));
+  }, [initialValues]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -45,7 +53,6 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
     const normalizedDeparture = normalizeDateInput(searchData.departureDate);
     const normalizedReturn = normalizeDateInput(searchData.returnDate);
 
-    // keep state normalized
     setSearchData((prev) => ({
       ...prev,
       departureDate: normalizedDeparture,
@@ -80,7 +87,6 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10">
       <div className="bg-white rounded-2xl shadow-lg p-6">
-        {/* Trip Type Tabs */}
         <div className="flex flex-wrap gap-6 md:gap-8 mb-6 border-b border-gray-200 pb-4">
           {["round-trip", "one-way"].map((type) => (
             <label key={type} className="flex items-center cursor-pointer">
@@ -92,11 +98,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
                 onChange={(e) => onTripTypeChange(e.target.value)}
                 className="mr-3 w-5 h-5 text-blue-600"
               />
-              <span
-                className={`text-lg font-medium ${
-                  tripType === type ? "text-gray-800" : "text-gray-700"
-                }`}
-              >
+              <span className={tripType === type ? "text-lg font-medium text-gray-800" : "text-lg font-medium text-gray-700"}>
                 {type.charAt(0).toUpperCase() + type.slice(1).replace("-", " ")}
               </span>
             </label>
@@ -107,7 +109,6 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
           </label>
         </div>
 
-        {/* Search Fields */}
         <form
           onSubmit={handleSearch}
           className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
@@ -120,9 +121,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               type="text"
               placeholder="City or Airport"
               value={searchData.from}
-              onChange={(e) =>
-                setSearchData({ ...searchData, from: e.target.value })
-              }
+              onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -156,9 +155,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               type="text"
               placeholder="City or Airport"
               value={searchData.to}
-              onChange={(e) =>
-                setSearchData({ ...searchData, to: e.target.value })
-              }
+              onChange={(e) => setSearchData({ ...searchData, to: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -168,9 +165,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
               Departure date
             </label>
             <input
-              type="text"
-              inputMode="numeric"
-              placeholder="YYYY-MM-DD"
+              type="date"
               value={searchData.departureDate}
               onChange={(e) =>
                 setSearchData({
@@ -195,9 +190,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
                 Return date
               </label>
               <input
-                type="text"
-                inputMode="numeric"
-                placeholder="YYYY-MM-DD"
+                type="date"
                 value={searchData.returnDate}
                 onChange={(e) =>
                   setSearchData({
@@ -232,7 +225,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch }) => {
                 }
                 className="w-7 h-7 flex items-center justify-center rounded bg-gray-100 hover:bg-gray-200"
               >
-                –
+                -
               </button>
 
               <input

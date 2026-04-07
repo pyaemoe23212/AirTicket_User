@@ -2,8 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyContact, createContact, updateContact, createBooking, addPassengers } from "../utils/api";
 
-export default function BookingForm({ selectedFlights = [], tripType }) {
+const createEmptyPassenger = () => ({
+  givenName: "",
+  lastName: "",
+  passport: "",
+  gender: "",
+  dob: "",
+  nationality: "",
+  phone: "",
+});
+
+export default function BookingForm({ selectedFlights = [], tripType, initialAdults = 1 }) {
   const navigate = useNavigate();
+  const normalizedAdults = Math.max(1, Number(initialAdults) || 1);
 
   const [contact, setContact] = useState({
     givenName: "",
@@ -21,17 +32,9 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
   const [isSavingContact, setIsSavingContact] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const [passenger, setPassenger] = useState([
-    {
-      givenName: "",
-      lastName: "",
-      passport: "",
-      gender: "",
-      dob: "",
-      nationality: "",
-      phone: "",
-    },
-  ]);
+  const [passenger, setPassenger] = useState(() =>
+    Array.from({ length: normalizedAdults }, createEmptyPassenger)
+  );
 
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -120,18 +123,8 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
   };
 
   const handleAddPassenger = () => {
-    setPassenger([
-      ...passenger,
-      {
-        givenName: "",
-        lastName: "",
-        passport: "",
-        gender: "",
-        dob: "",
-        nationality: "",
-        phone: "",
-      },
-    ]);
+    if (passenger.length >= normalizedAdults) return;
+    setPassenger([...passenger, createEmptyPassenger()]);
   };
 
   const handleConfirm = async () => {
@@ -474,13 +467,16 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
               
               <div>
                 <label className="text-xs block mb-1">Gender on ID</label>
-                <input
+                <select
                   name="gender"
                   value={p.gender}
                   onChange={(e) => handlePassengerChange(index, e)}
-                  placeholder="Enter Gender"
-                  className="border border-gray-300 p-2 w-full text-sm"
-                />
+                  className="border border-gray-300 p-2 w-full text-sm bg-white"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="MALE">MALE</option>
+                  <option value="FEMALE">FEMALE</option>
+                </select>
               </div>
 
               <div>
@@ -529,12 +525,14 @@ export default function BookingForm({ selectedFlights = [], tripType }) {
           </button>
 
           <div className="flex gap-4">
-            <button
-              onClick={handleAddPassenger}
-              className="bg-black text-white px-8 py-2 text-sm"
-            >
-              Add Passenger
-            </button>
+            {passenger.length < normalizedAdults && (
+              <button
+                onClick={handleAddPassenger}
+                className="bg-black text-white px-8 py-2 text-sm"
+              >
+                Add Passenger
+              </button>
+            )}
 
             <button
               onClick={handleConfirm}

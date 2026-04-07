@@ -6,10 +6,8 @@ import ResultsSection from "../components/ResultsSection";
 import AboutSection from "../components/AboutSection";
 import { searchFlights, searchRoundTripFlights } from "../utils/api";
 
-
 const transformFlightData = (flights) => {
   return flights.map((f) => {
-    // Check if it's a round-trip (has both outbound and inbound)
     if (f?.outbound && f?.inbound) {
       return {
         type: "ROUND_TRIP",
@@ -54,7 +52,6 @@ const transformFlightData = (flights) => {
       };
     }
 
-    // ONE_WAY flight
     return {
       type: "ONE_WAY",
       adults: f.adults,
@@ -89,7 +86,6 @@ const transformFlightData = (flights) => {
   });
 };
 
-
 const FlightSearchPage = ({
   initialTripType = "round-trip",
   pageTitle = "Available Flights",
@@ -101,12 +97,9 @@ const FlightSearchPage = ({
 
   const state = location.state || {};
   const tripTypeFromState = state.tripType;
-  const outboundFlight = state.outboundFlight;
   const previousFlight = state.outboundFlight || state.flight;
 
-  const [tripType, setTripType] = useState(
-    tripTypeFromState || initialTripType,
-  );
+  const [tripType, setTripType] = useState(tripTypeFromState || initialTripType);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -114,26 +107,21 @@ const FlightSearchPage = ({
   const buildParams = (raw) => {
     const origin = (raw?.origin || raw?.from || "").toUpperCase();
     const destination = (raw?.destination || raw?.to || "").toUpperCase();
-    const departure_date =
-      raw?.departure_date || raw?.departureDate || raw?.date || "";
+    const departure_date = raw?.departure_date || raw?.departureDate || raw?.date || "";
     const return_date = raw?.return_date || raw?.returnDate || "";
 
     return {
       origin,
       destination,
       departure_date,
-      return_date, // keep for round-trip
+      return_date,
       adults: Number(raw?.adults || raw?.passengers || 1),
       page: Number(raw?.page || 1),
     };
   };
 
   const handleSearch = async (searchData) => {
-    const targetPath = isReturnPage
-      ? "/return"
-      : tripType === "one-way"
-        ? "/one-way"
-        : "/departure";
+    const targetPath = isReturnPage ? "/return" : tripType === "one-way" ? "/one-way" : "/departure";
 
     if (location.pathname !== targetPath) {
       navigate(targetPath, { state: { tripType, searchData } });
@@ -145,13 +133,9 @@ const FlightSearchPage = ({
       setError("");
 
       const params = buildParams(searchData);
-
-      let res;
-      if (tripType === "round-trip") {
-        res = await searchRoundTripFlights(params);
-      } else {
-        res = await searchFlights(params);
-      }
+      const res = tripType === "round-trip"
+        ? await searchRoundTripFlights(params)
+        : await searchFlights(params);
 
       setFlights(transformFlightData(res));
     } catch (e) {
@@ -166,37 +150,38 @@ const FlightSearchPage = ({
     if (state.searchData) {
       handleSearch(state.searchData);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
 
   const handleSelectFlight = (flight) => {
     if (tripType === "round-trip") {
       if (!isReturnPage) {
-        // Departure page: save outbound flight and go to return page
         navigate("/return", {
           state: {
             tripType,
-            outboundFlight: flight,  // Store selected outbound flight
+            outboundFlight: flight,
             searchData: state.searchData,
           },
         });
         return;
       }
 
-      // Return page: combine with previously saved outbound flight
       navigate("/booking", {
         state: {
           tripType,
-          outboundFlight: previousFlight,  // Use the previously selected flight
-          returnFlight: flight,  // Use currently selected return flight
+          outboundFlight: previousFlight,
+          returnFlight: flight,
+          searchData: state.searchData,
         },
       });
       return;
     }
 
-    // One-way: go directly to booking
     navigate("/booking", {
-      state: { tripType, outboundFlight: flight },
+      state: {
+        tripType,
+        outboundFlight: flight,
+        searchData: state.searchData,
+      },
     });
   };
 
@@ -207,12 +192,13 @@ const FlightSearchPage = ({
         tripType={tripType}
         onTripTypeChange={setTripType}
         onSearch={handleSearch}
+        initialValues={state.searchData}
       />
 
       <ResultsSection
         pageTitle={pageTitle}
         previousFlight={previousFlight}
-        showSelectedPreviousFlight={isReturnPage}  // Show previous flight on return page
+        showSelectedPreviousFlight={isReturnPage}
         onSelectFlight={handleSelectFlight}
         flights={flights}
         loading={loading}

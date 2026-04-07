@@ -19,5 +19,7 @@ export default function Booking() {
     ...(tripType === "round-trip" && ret ? [{ ...ret, label: "Return" }] : []),
   ];
 
-  return <BookingForm selectedFlights={selectedFlights} tripType={tripType} />;
+  const initialAdults = Math.max(1, Number(state?.searchData?.adults || state?.searchData?.passengers || outbound?.adults || 1));
+
+  return (<BookingForm selectedFlights={selectedFlights} tripType={tripType} initialAdults={initialAdults} />);
 }

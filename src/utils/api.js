@@ -128,3 +128,15 @@ export const verifyEmail = async (token) => {
   const response = await apiClient.post("/auth/verify-email", { token });
   return response.data;
 };
+
+export const getSecureTicket = async (bookingId) => {
+  const response = await apiClient.get(`/secure/tickets/${bookingId}`, {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
+export const getTicketStatus = async (bookingId) => {
+  const response = await apiClient.get(`/files/status/${bookingId}`);
+  return response.data;
+};

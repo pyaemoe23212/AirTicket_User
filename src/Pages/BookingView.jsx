@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getBookingDetail } from "../utils/api";
+import { getBookingDetail, getSecureTicket, getTicketStatus } from "../utils/api";
 
 export default function BookingView() {
   const navigate = useNavigate();
@@ -9,6 +9,9 @@ export default function BookingView() {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [downloading, setDownloading] = useState(false);
+  const [ticketStatus, setTicketStatus] = useState(null);
+  const [ticketStatusLoading, setTicketStatusLoading] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -25,7 +28,23 @@ export default function BookingView() {
       }
     };
 
-    if (bookingId) fetchBooking();
+    const fetchTicketStatus = async () => {
+      try {
+        setTicketStatusLoading(true);
+        const statusData = await getTicketStatus(bookingId);
+        setTicketStatus(statusData || null);
+      } catch (err) {
+        // Silently fail for ticket status - not critical
+        setTicketStatus(null);
+      } finally {
+        setTicketStatusLoading(false);
+      }
+    };
+
+    if (bookingId) {
+      fetchBooking();
+      fetchTicketStatus();
+    }
   }, [bookingId]);
 
   const toNumber = (value) => {
@@ -100,12 +119,25 @@ export default function BookingView() {
     return [];
   }, [booking]);
 
-  const ticketUrl =
-    booking?.ticket_file_url ||
-    booking?.ticket_url ||
-    booking?.ticket_file ||
-    booking?.uploaded_file_url ||
-    "";
+  const handleDownloadTicket = async () => {
+    try {
+      setDownloading(true);
+      const blob = await getSecureTicket(bookingId);
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = booking.original_ticket_name || booking.original_name || `ticket-${booking.booking_code}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert("Failed to download ticket: " + (err.message || "Unknown error"));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -232,15 +264,11 @@ export default function BookingView() {
               <p className="text-xl font-semibold text-gray-900">{booking.adults ?? 1}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Base Price (USD)</p>
-              <p className="text-xl font-semibold text-gray-900">{formatUSD(booking.base_price_usd)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Final Price (USD)</p>
+              <p className="text-sm text-gray-500"> Price (USD)</p>
               <p className="text-xl font-semibold text-gray-900">{formatUSD(booking.final_price_usd)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Final Price (MMK)</p>
+              <p className="text-sm text-gray-500"> Price (MMK)</p>
               <p className="text-xl font-semibold text-gray-900">{formatMMK(booking.final_price_mmk)}</p>
             </div>
           </div>
@@ -312,12 +340,6 @@ export default function BookingView() {
         <section className="border-t border-gray-200 px-6 py-6">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-2xl font-semibold text-gray-900">Payment & Status</h3>
-            <button
-              type="button"
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              View Audit
-            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-y-4 md:grid-cols-3 md:gap-x-12">
@@ -354,30 +376,39 @@ export default function BookingView() {
 
         <section className="border-t border-gray-200 px-6 py-6">
           <h3 className="mb-4 text-2xl font-semibold text-gray-900">Ticket File</h3>
-          <div className="flex flex-col items-start justify-between gap-3 rounded border border-gray-200 bg-gray-50 p-4 md:flex-row md:items-center">
-            <p className="text-sm text-gray-700">
-              {ticketUrl ? "Download to see the uploaded file." : "No ticket file uploaded yet."}
-            </p>
-
-            {ticketUrl ? (
-              <a
-                href={ticketUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded bg-green-600 px-6 py-2 text-sm font-medium text-white hover:bg-green-700"
-              >
-                Download
-              </a>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="rounded bg-gray-300 px-6 py-2 text-sm font-medium text-gray-600"
-              >
-                Download
-              </button>
-            )}
-          </div>
+          
+          {ticketStatusLoading ? (
+            <div className="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+              Loading ticket status...
+            </div>
+          ) : ticketStatus?.has_ticket ? (
+            <div className="space-y-4">
+              <div className="rounded border border-green-200 bg-green-50 p-4">
+                <p className="text-sm text-green-700 font-medium mb-2"> Ticket Uploaded</p>
+                {ticketStatus?.ticket_uploaded_at && (
+                  <p className="text-xs text-green-600">
+                    Uploaded on {formatDateTime(ticketStatus.ticket_uploaded_at)}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+                <button
+                  disabled={downloading}
+                  onClick={handleDownloadTicket}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm disabled:opacity-60 disabled:cursor-not-allowed transition"
+                >
+                  {downloading ? "Downloading..." : "Download Ticket"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
+              <p className="text-sm text-yellow-700 font-medium"> No Ticket Uploaded Yet</p>
+              <p className="text-xs text-yellow-600 mt-1">
+                The ticket file will be available once it has been uploaded by the airline or administrator.
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </div>

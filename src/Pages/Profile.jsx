@@ -1,12 +1,21 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { getCustomerMe, getUserBookings } from "../utils/api";
+import { getCustomerMe, getUserBookings, resetPassword } from "../utils/api";
 
 export default function Profile() {
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetFormData, setResetFormData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -171,6 +180,63 @@ export default function Profile() {
     return "border-gray-300 bg-gray-100 text-gray-700";
   };
 
+  const handleResetPasswordClick = () => {
+    setShowResetModal(true);
+    setResetError("");
+    setResetSuccess(false);
+    setResetFormData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
+
+  const handleResetFormChange = (e) => {
+    const { name, value } = e.target;
+    setResetFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    setResetError("");
+
+    if (!resetFormData.currentPassword) {
+      setResetError("Current password is required");
+      return;
+    }
+
+    if (resetFormData.newPassword !== resetFormData.confirmPassword) {
+      setResetError("New passwords do not match");
+      return;
+    }
+
+    if (resetFormData.newPassword.length < 8) {
+      setResetError("Password must be at least 8 characters");
+      return;
+    }
+
+    setResetting(true);
+
+    try {
+      await resetPassword(resetFormData.currentPassword, resetFormData.newPassword);
+      setResetSuccess(true);
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetFormData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }, 2000);
+    } catch (err) {
+      setResetError(
+        err?.response?.data?.message || err.message || "Failed to reset password"
+      );
+    } finally {
+      setResetting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-6xl bg-white px-6 py-8 text-sm text-gray-600 md:px-10">
@@ -190,12 +256,22 @@ export default function Profile() {
           ←
         </Link>
 
-        <Link
-          to="/edit-info"
-          className="bg-gray-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
-        >
-          Edit info
-        </Link>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleResetPasswordClick}
+            className="bg-gray-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-900 cursor-pointer"
+          >
+            Reset Password
+          </button>
+
+          <Link
+            to="/edit-info"
+            className="bg-gray-800 px-5 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
+          >
+            Edit info
+          </Link>
+        </div>
       </div>
 
       <div className="border-b border-gray-200 pb-7">
@@ -344,6 +420,107 @@ export default function Profile() {
           </table>
         </div>
       </section>
+
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+            <div className="p-6">
+              {resetSuccess ? (
+                <div className="text-center py-6">
+                  <div className="mb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Password Reset Successful</h3>
+                  <p className="text-gray-600 text-sm">Your password has been changed successfully.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-gray-900">Reset Password</h3>
+                  </div>
+
+                  {resetError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-700 text-sm">{resetError}</p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleResetSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Current Password
+                      </label>
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={resetFormData.currentPassword}
+                        onChange={handleResetFormChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+                        placeholder="Enter current password"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        New Password
+                      </label>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={resetFormData.newPassword}
+                        onChange={handleResetFormChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+                        placeholder="Enter new password"
+                        required
+                        minLength="8"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">At least 8 characters</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirm Password
+                      </label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={resetFormData.confirmPassword}
+                        onChange={handleResetFormChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+                        placeholder="Confirm password"
+                        required
+                        minLength="8"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setShowResetModal(false)}
+                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={resetting}
+                        className="flex-1 px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        {resetting ? "Resetting..." : "Reset Password"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

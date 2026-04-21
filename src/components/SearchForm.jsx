@@ -103,10 +103,7 @@ const SearchForm = ({ tripType, onTripTypeChange, onSearch, initialValues }) => 
               </span>
             </label>
           ))}
-          <label className="flex items-center cursor-pointer ml-auto">
-            <input type="checkbox" className="mr-3 w-5 h-5" />
-            <span className="text-lg font-medium text-gray-700">Nonstop</span>
-          </label>
+
         </div>
 
         <form

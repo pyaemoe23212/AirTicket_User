@@ -55,6 +55,18 @@ export default function BookingView() {
   const formatUSD = (value) => "$" + toNumber(value).toFixed(2);
   const formatMMK = (value) => "MMK " + toNumber(value).toLocaleString();
 
+  const getEstimatePriceMMK = () => {
+    if (!booking) return "-";
+    const snap = booking.flight_snapshot || {};
+    const priceMinMMK = snap?.price_estimate_min_mmk || booking.final_price_mmk;
+    const priceMaxMMK = snap?.price_estimate_max_mmk || booking.final_price_mmk;
+    
+    if (priceMinMMK && priceMaxMMK && priceMinMMK !== priceMaxMMK) {
+      return formatMMK(priceMinMMK) + " - " + formatMMK(priceMaxMMK);
+    }
+    return formatMMK(priceMaxMMK || priceMinMMK || 0);
+  };
+
   const formatDate = (value) => {
     if (!value) return "-";
     const d = new Date(value);
@@ -214,9 +226,6 @@ export default function BookingView() {
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-8 text-gray-800 md:px-10">
       <div className="mb-5 flex items-center justify-between">
-        <Link to="/profile" className="text-sm text-gray-600 underline hover:text-gray-900">
-          Back to Profile
-        </Link>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -264,12 +273,8 @@ export default function BookingView() {
               <p className="text-xl font-semibold text-gray-900">{booking.adults ?? 1}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500"> Price (USD)</p>
-              <p className="text-xl font-semibold text-gray-900">{formatUSD(booking.final_price_usd)}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500"> Price (MMK)</p>
-              <p className="text-xl font-semibold text-gray-900">{formatMMK(booking.final_price_mmk)}</p>
+              <p className="text-sm text-gray-500"> Estimate Price (MMK)</p>
+              <p className="text-xl font-semibold text-gray-900">{getEstimatePriceMMK()}</p>
             </div>
           </div>
         </section>
@@ -403,7 +408,7 @@ export default function BookingView() {
             </div>
           ) : (
             <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
-              <p className="text-sm text-yellow-700 font-medium"> No Ticket Uploaded Yet</p>
+              <p className="text-sm text-yellow-700 font-medium">  No Ticket Uploaded Yet</p>
               <p className="text-xs text-yellow-600 mt-1">
                 The ticket file will be available once it has been uploaded by the airline or administrator.
               </p>

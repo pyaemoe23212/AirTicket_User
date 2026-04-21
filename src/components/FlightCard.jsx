@@ -7,11 +7,11 @@ const FlightCard = ({ flight, onSelect }) => {
   const flightData = isRoundTrip && snapshot?.outbound ? snapshot.outbound : snapshot;
   
   // Safely access price properties
-  const priceMin = snapshot?.price_estimate_min_usd || flight?.final_price_usd;
-  const priceMax = snapshot?.price_estimate_max_usd || flight?.final_price_usd;
+  const priceMin = snapshot?.price_estimate_min_mmk || flight?.final_price_mmk;
+  const priceMax = snapshot?.price_estimate_max_mmk || flight?.final_price_mmk;
   const priceDisplay = priceMin && priceMax && priceMin !== priceMax 
-    ? `$${priceMin} - $${priceMax}` 
-    : `$${priceMax || priceMin || flight?.final_price_usd || 0}`;
+    ? `${priceMin} - ${priceMax}` 
+    : `${priceMax || priceMin || flight?.final_price_mmk || 0}`;
 
   const formatTime = (iso) => {
     if (!iso) return "--:--";

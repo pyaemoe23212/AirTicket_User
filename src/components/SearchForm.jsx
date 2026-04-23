@@ -1,50 +1,72 @@
 import { useEffect, useState } from "react";
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-const isValidDateString = (value) => {
-  if (!DATE_RE.test(value)) return false;
-
-  const [y, m, d] = value.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-
-  return (
-    dt.getUTCFullYear() === y &&
-    dt.getUTCMonth() === m - 1 &&
-    dt.getUTCDate() === d
-  );
-};
-
-const sanitizeDateInput = (value) => value.replace(/[^\d-]/g, "").slice(0, 10);
-
-const normalizeDateInput = (value) => {
-  const v = value.trim();
-  const m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (!m) return v;
-
-  const y = m[1];
-  const mo = String(Number(m[2])).padStart(2, "0");
-  const d = String(Number(m[3])).padStart(2, "0");
-
-  return `${y}-${mo}-${d}`;
-};
-
 const makeInitialSearchData = (initialValues) => ({
   from: initialValues?.origin || initialValues?.from || "",
   to: initialValues?.destination || initialValues?.to || "",
   departureDate:
     initialValues?.departure_date ||
     initialValues?.departureDate ||
-    "2026-04-10",
+    "",
   returnDate:
     initialValues?.return_date ||
     initialValues?.returnDate ||
-    "2026-04-15",
+    "",
   passengers: Math.max(
     1,
     Number(initialValues?.adults || initialValues?.passengers || 1)
   ),
 });
+
+const formatDisplayDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const LocationIcon = (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 21s-6-5.33-6-10a6 6 0 1112 0c0 4.67-6 10-6 10z" />
+    <circle cx="12" cy="11" r="2" />
+  </svg>
+);
+
+const CalendarIcon = (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const SearchIcon = (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </svg>
+);
 
 const SearchForm = ({
   tripType,
@@ -55,7 +77,6 @@ const SearchForm = ({
   const [searchData, setSearchData] = useState(() =>
     makeInitialSearchData(initialValues)
   );
-  const [dateError, setDateError] = useState("");
 
   useEffect(() => {
     if (!initialValues) return;
@@ -64,37 +85,17 @@ const SearchForm = ({
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setDateError("");
-
-    const normalizedDeparture = normalizeDateInput(searchData.departureDate);
-    const normalizedReturn = normalizeDateInput(searchData.returnDate);
-
-    setSearchData((prev) => ({
-      ...prev,
-      departureDate: normalizedDeparture,
-      returnDate: normalizedReturn,
-    }));
-
-    if (!isValidDateString(normalizedDeparture)) {
-      setDateError("Departure date must be YYYY-MM-DD.");
-      return;
-    }
-
-    if (tripType === "round-trip" && !isValidDateString(normalizedReturn)) {
-      setDateError("Return date must be YYYY-MM-DD.");
-      return;
-    }
 
     const payload = {
       origin: searchData.from.trim().toUpperCase(),
       destination: searchData.to.trim().toUpperCase(),
-      departure_date: normalizedDeparture,
+      departure_date: searchData.departureDate,
       adults: Number(searchData.passengers),
       trip_type: tripType,
     };
 
-    if (tripType === "round-trip") {
-      payload.return_date = normalizedReturn;
+    if (tripType === "round-trip" && searchData.returnDate) {
+      payload.return_date = searchData.returnDate;
     }
 
     onSearch(payload);
@@ -102,12 +103,12 @@ const SearchForm = ({
 
   return (
     <div className="max-w-6xl mx-auto px-4 relative z-20">
-      <div className="bg-white rounded-2xl shadow-[0_16px_40px_rgba(15,23,42,0.12)] p-5 md:p-6">
-        <div className="flex items-center gap-6 mb-5">
+      <div className="bg-white rounded-[22px] shadow-[0_18px_45px_rgba(15,23,42,0.14)] p-8">
+        <div className="flex items-center gap-8 mb-8">
           {["round-trip", "one-way"].map((type) => (
             <label
               key={type}
-              className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+              className="flex items-center gap-2 cursor-pointer text-[15px] text-gray-700"
             >
               <input
                 type="radio"
@@ -115,188 +116,187 @@ const SearchForm = ({
                 value={type}
                 checked={tripType === type}
                 onChange={(e) => onTripTypeChange(e.target.value)}
-                className="accent-blue-600"
+                className="accent-blue-600 w-4 h-4"
               />
               <span>{type === "round-trip" ? "Round-trip" : "One-way"}</span>
             </label>
           ))}
         </div>
 
-        <form
-          onSubmit={handleSearch}
-          className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
-        >
-          <div className="md:col-span-3">
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Leaving from
-            </label>
-            <input
-              type="text"
-              placeholder="City or Airport"
-              value={searchData.from}
-              onChange={(e) =>
-                setSearchData({ ...searchData, from: e.target.value })
-              }
-              className="w-full h-11 rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-700 outline-none focus:border-blue-500"
-            />
-          </div>
-
-          <div className="md:col-span-3">
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Going to
-            </label>
-            <div className="relative flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  setSearchData((prev) => ({
-                    ...prev,
-                    from: prev.to,
-                    to: prev.from,
-                  }))
-                }
-                className="hidden md:flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7h10m0 0l-3-3m3 3l-3 3M16 17H6m0 0l3-3m-3 3l3 3"
-                  />
-                </svg>
-              </button>
-
-              <input
-                type="text"
-                placeholder="City or Airport"
-                value={searchData.to}
-                onChange={(e) =>
-                  setSearchData({ ...searchData, to: e.target.value })
-                }
-                className="w-full h-11 rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-700 outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-
+        <form onSubmit={handleSearch}>
           <div
-            className={tripType === "round-trip" ? "md:col-span-2" : "md:col-span-3"}
+            className={`grid grid-cols-1 gap-4 ${
+              tripType === "round-trip"
+                ? "md:grid-cols-5"
+                : "md:grid-cols-4"
+            }`}
           >
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Dates
-            </label>
-            <input
-              type="date"
-              value={searchData.departureDate}
-              onChange={(e) =>
-                setSearchData({
-                  ...searchData,
-                  departureDate: sanitizeDateInput(e.target.value),
-                })
-              }
-              onBlur={() =>
-                setSearchData((prev) => ({
-                  ...prev,
-                  departureDate: normalizeDateInput(prev.departureDate),
-                }))
-              }
-              className="w-full h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-blue-500"
-              required
-            />
-          </div>
-
-          {tripType === "round-trip" && (
-            <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-2 opacity-0">
-                Return
+            <div>
+              <label className="block text-sm font-medium text-slate-500 mb-3">
+                Leaving from
               </label>
-              <input
-                type="date"
-                value={searchData.returnDate}
-                onChange={(e) =>
-                  setSearchData({
-                    ...searchData,
-                    returnDate: sanitizeDateInput(e.target.value),
-                  })
-                }
-                onBlur={() =>
-                  setSearchData((prev) => ({
-                    ...prev,
-                    returnDate: normalizeDateInput(prev.returnDate),
-                  }))
-                }
-                className="w-full h-11 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none focus:border-blue-500"
-                required
-              />
+              <div className="h-14 rounded-2xl border border-gray-200 bg-white flex items-center px-4">
+                <span className="mr-3 text-gray-400">{LocationIcon}</span>
+                <input
+                  type="text"
+                  placeholder="City or Airport"
+                  value={searchData.from}
+                  onChange={(e) =>
+                    setSearchData({ ...searchData, from: e.target.value })
+                  }
+                  className="w-full bg-transparent outline-none text-base text-slate-700 placeholder:text-gray-400"
+                />
+              </div>
             </div>
-          )}
 
-          <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-2">
-              Passengers
-            </label>
-            <div className="h-11 rounded-lg border border-gray-200 bg-white px-3 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() =>
-                  setSearchData((prev) => ({
-                    ...prev,
-                    passengers: Math.max(1, Number(prev.passengers) - 1),
-                  }))
-                }
-                className="w-6 h-6 flex items-center justify-center rounded border border-blue-200 text-blue-600 hover:bg-blue-50"
-              >
-                -
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-slate-500 mb-3">
+                Going to
+              </label>
+              <div className="h-14 rounded-2xl border border-gray-200 bg-white flex items-center px-4">
+                <span className="mr-3 text-gray-400">{LocationIcon}</span>
+                <input
+                  type="text"
+                  placeholder="City or Airport"
+                  value={searchData.to}
+                  onChange={(e) =>
+                    setSearchData({ ...searchData, to: e.target.value })
+                  }
+                  className="w-full bg-transparent outline-none text-base text-slate-700 placeholder:text-gray-400"
+                />
+              </div>
+            </div>
 
-              <span className="text-sm font-medium text-gray-700">
-                {searchData.passengers}
-              </span>
+            <div>
+              <label className="block text-sm font-medium text-slate-500 mb-3">
+                Departure date
+              </label>
+              <div className="relative">
+                <div className="h-14 rounded-2xl border border-gray-200 bg-white flex items-center px-4">
+                  <span className="mr-3 text-gray-400">{CalendarIcon}</span>
+                  <input
+                    type="text"
+                    readOnly
+                    value={formatDisplayDate(searchData.departureDate)}
+                    placeholder="Jan 15"
+                    onClick={() => {
+                      const el = document.getElementById("departure-date");
+                      if (el?.showPicker) {
+                        el.showPicker();
+                      } else if (el) {
+                        el.click();
+                      }
+                    }}
+                    className="w-full bg-transparent outline-none text-base text-slate-700 placeholder:text-gray-400 cursor-pointer"
+                  />
+                </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setSearchData((prev) => ({
-                    ...prev,
-                    passengers: Number(prev.passengers) + 1,
-                  }))
-                }
-                className="w-6 h-6 flex items-center justify-center rounded border border-blue-200 text-blue-600 hover:bg-blue-50"
-              >
-                +
-              </button>
+                <input
+                  id="departure-date"
+                  type="date"
+                  value={searchData.departureDate}
+                  onChange={(e) =>
+                    setSearchData({
+                      ...searchData,
+                      departureDate: e.target.value,
+                    })
+                  }
+                  className="absolute inset-0 opacity-0 pointer-events-none"
+                  tabIndex={-1}
+                />
+              </div>
+            </div>
+
+            {tripType === "round-trip" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-500 mb-3">
+                  Return date
+                </label>
+                <div className="relative">
+                  <div className="h-14 rounded-2xl border border-gray-200 bg-white flex items-center px-4">
+                    <span className="mr-3 text-gray-400">{CalendarIcon}</span>
+                    <input
+                      type="text"
+                      readOnly
+                      value={formatDisplayDate(searchData.returnDate)}
+                      placeholder="Jan 22"
+                      onClick={() => {
+                        const el = document.getElementById("return-date");
+                        if (el?.showPicker) {
+                          el.showPicker();
+                        } else if (el) {
+                          el.click();
+                        }
+                      }}
+                      className="w-full bg-transparent outline-none text-base text-slate-700 placeholder:text-gray-400 cursor-pointer"
+                    />
+                  </div>
+
+                  <input
+                    id="return-date"
+                    type="date"
+                    value={searchData.returnDate}
+                    onChange={(e) =>
+                      setSearchData({
+                        ...searchData,
+                        returnDate: e.target.value,
+                      })
+                    }
+                    className="absolute inset-0 opacity-0 pointer-events-none"
+                    tabIndex={-1}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-500 mb-3">
+                Passengers
+              </label>
+              <div className="h-14 rounded-2xl border border-gray-200 bg-white px-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSearchData((prev) => ({
+                      ...prev,
+                      passengers: Math.max(1, Number(prev.passengers) - 1),
+                    }))
+                  }
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
+                >
+                  -
+                </button>
+
+                <span className="text-lg font-medium text-slate-700">
+                  {searchData.passengers}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSearchData((prev) => ({
+                      ...prev,
+                      passengers: Number(prev.passengers) + 1,
+                    }))
+                  }
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="md:col-span-3">
+          <div className="mt-7">
             <button
               type="submit"
-              className="w-full md:w-auto min-w-[160px] h-11 px-6 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+              className="h-12 px-10 bg-blue-600 text-white rounded-2xl font-medium hover:bg-blue-700 transition flex items-center justify-center gap-3"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              {SearchIcon}
               Search Flights
             </button>
           </div>
         </form>
-
-        {dateError && <p className="mt-3 text-sm text-red-600">{dateError}</p>}
       </div>
     </div>
   );

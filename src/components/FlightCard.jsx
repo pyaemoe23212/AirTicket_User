@@ -1,17 +1,19 @@
+import { FaPlane } from "react-icons/fa";
+
 const FlightCard = ({ flight, onSelect }) => {
-  // Handle undefined flight_snapshot
   const snapshot = flight?.flight_snapshot;
   const isRoundTrip = flight?.type === "ROUND_TRIP";
-  
-  // For round-trip, use outbound flight for display
-  const flightData = isRoundTrip && snapshot?.outbound ? snapshot.outbound : snapshot;
-  
-  // Safely access price properties
+
+  const flightData =
+    isRoundTrip && snapshot?.outbound ? snapshot.outbound : snapshot;
+
   const priceMin = snapshot?.price_estimate_min_mmk || flight?.final_price_mmk;
   const priceMax = snapshot?.price_estimate_max_mmk || flight?.final_price_mmk;
-  const priceDisplay = priceMin && priceMax && priceMin !== priceMax 
-    ? `${priceMin} - ${priceMax}` 
-    : `${priceMax || priceMin || flight?.final_price_mmk || 0}`;
+
+  const priceDisplay =
+    priceMin && priceMax && priceMin !== priceMax
+      ? `${priceMin} - ${priceMax}`
+      : `${priceMax || priceMin || flight?.final_price_mmk || 0}`;
 
   const formatTime = (iso) => {
     if (!iso) return "--:--";
@@ -24,52 +26,54 @@ const FlightCard = ({ flight, onSelect }) => {
     });
   };
 
-  // Fallback values if flightData is undefined
   const airline = flightData?.airline || "Unknown Airline";
-  const airline_code = flightData?.airline_code || "XX";
+  const airlineCode = flightData?.airline_code || "XX";
   const flightNumber = flightData?.flight_number || "-";
   const departureTime = formatTime(flightData?.departure_time);
   const arrivalTime = formatTime(flightData?.arrival_time);
-  const duration = flightData?.duration_minutes ? `${flightData.duration_minutes} min` : "-";
+  const duration = flightData?.duration_minutes
+    ? `${Math.floor(flightData.duration_minutes / 60)}h ${flightData.duration_minutes % 60}m`
+    : "-";
 
   return (
-    <div className="border border-gray-300 p-4 flex items-center justify-between bg-white">
-      {/* Left Section */}
-      <div className="flex items-center space-x-6">
-        {/* Logo */}
-        <div className="w-14 h-14 border bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-          [LOGO]
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:shadow-md transition">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+          <FaPlane className="text-lg" />
         </div>
 
-        {/* Airline Info */}
-        <div>
-          <p className="text-gray-700 font-medium">{airline}</p>
-          <p className="text-sm text-gray-500">{airline_code}-{flightNumber}</p>
+        <div className="min-w-0">
+          <p className="text-slate-800 font-semibold truncate">{airline}</p>
+          <p className="text-sm text-slate-400">
+            {airlineCode}-{flightNumber}
+          </p>
         </div>
 
-        {/* Time */}
-        <div className="ml-10">
-          <p className="text-gray-700">
+        <div className="md:ml-6 min-w-[110px]">
+          <p className="text-slate-800 font-medium">
             {departureTime} - {arrivalTime}
           </p>
-          <p className="text-sm text-gray-500">{duration}</p>
+          <p className="text-sm text-slate-400">{duration}</p>
         </div>
 
-        {/* Tags */}
-        <div className="flex space-x-2 ml-10">
-          <span className="border px-2 py-1 text-xs text-gray-600">
+        <div className="flex flex-wrap gap-2 md:ml-4">
+          <span className="px-3 py-1 rounded-md bg-blue-50 text-blue-600 text-xs font-medium">
             {isRoundTrip ? "Round Trip" : "One Way"}
+          </span>
+          <span className="px-3 py-1 rounded-md bg-blue-50 text-blue-600 text-xs font-medium">
+            Economy
           </span>
         </div>
       </div>
 
-      {/* Right Section */}
-      <div className="flex items-center space-x-6">
-        <p className="text-gray-700 font-semibold">{priceDisplay}</p>
+      <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 shrink-0">
+        <p className="text-2xl font-bold text-slate-700 whitespace-nowrap">
+          {priceDisplay}
+        </p>
 
         <button
           onClick={() => onSelect(flight)}
-          className="bg-gray-700 text-white px-4 py-1 text-sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition"
         >
           Select
         </button>

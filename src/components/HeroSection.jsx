@@ -1,10 +1,21 @@
 const HeroSection = () => {
   return (
-    <div className="relative bg-gray-200 h-64 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-600">[HERO IMAGE PLACEHOLDER]</p>
+    <section
+      className="relative h-[250px] md:h-[320px] bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(44, 74, 145, 0.72), rgba(44, 74, 145, 0.6)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=80')",
+      }}
+    >
+      <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
+        <h1 className="text-white text-4xl md:text-5xl font-bold">
+          Find Your Perfect Flight
+        </h1>
+        <p className="mt-4 text-white/90 text-base md:text-lg">
+          Search and compare flights from hundreds of airlines
+        </p>
       </div>
-    </div>
+    </section>
   );
 };
 

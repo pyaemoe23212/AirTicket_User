@@ -1,4 +1,3 @@
-// src/components/NavBar.jsx
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import SignIn from "../Pages/SignIn";
@@ -8,13 +7,11 @@ const NavBar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
 
-  // Check login status on mount and when modal state changes
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     setIsLoggedIn(!!token);
   }, [isLoginOpen]);
 
-  // Close modal when navigating to auth pages
   useEffect(() => {
     const authPages = ["/forgot-password", "/reset-password", "/verify-email"];
     if (authPages.includes(location.pathname)) {
@@ -28,31 +25,33 @@ const NavBar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-gray-800">Logo</span>
-            </Link>
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="/Logo.png"
+              alt="Infinity logo"
+              className="w-10 h-10 object-contain"
+            />
+            <span className="text-[20px] font-semibold text-[#1f5d99]">
+              InfinityDigital
+            </span>
+          </Link>
 
-          {/* Conditional: Signup/Login Button or Profile Icon + Logout */}
-          <nav className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-3">
             {isLoggedIn ? (
               <>
-                {/* Profile Icon */}
                 <Link
                   to="/profile"
-                  className="w-8 h-8 flex items-center justify-center rounded-full border text-gray-700 hover:bg-gray-100"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
                   title="Profile"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth={1.5}
+                    strokeWidth={1.7}
                     stroke="currentColor"
                     className="w-5 h-5"
                   >
@@ -63,19 +62,18 @@ const NavBar = () => {
                     />
                   </svg>
                 </Link>
-                {/* Logout Button */}
+
                 <button
                   onClick={handleLogout}
-                  className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-red-700 transition"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition"
                 >
                   Logout
                 </button>
               </>
             ) : (
-              // Before login: Show Signup/Login button
               <button
                 onClick={() => setIsLoginOpen(true)}
-                className="bg-gray-800 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
+                className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-700 transition hidden md:block"
               >
                 Signup/Login
               </button>
@@ -84,7 +82,6 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* MODAL */}
       <SignIn open={isLoginOpen} setOpen={setIsLoginOpen} />
     </header>
   );

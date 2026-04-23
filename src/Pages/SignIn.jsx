@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { resendVerificationEmail } from "../utils/api";
+import { FaEnvelope, FaLock, FaUser, FaPhoneAlt } from "react-icons/fa";
 
 export default function SignIn({ open = true, setOpen }) {
   const [screen, setScreen] = useState("login");
@@ -72,7 +73,9 @@ export default function SignIn({ open = true, setOpen }) {
       setError("");
       alert("Verification email sent! Please check your inbox.");
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || "Failed to resend email");
+      setError(
+        err?.response?.data?.message || err.message || "Failed to resend email"
+      );
     } finally {
       setResendLoading(false);
     }
@@ -82,20 +85,21 @@ export default function SignIn({ open = true, setOpen }) {
 
   return (
     <div
-      className={`${isModal ? "fixed inset-0 bg-black/50 backdrop-blur-sm" : ""} flex items-center justify-center z-50 p-4`}
+      className={`${
+        isModal ? "fixed inset-0 bg-black/50 backdrop-blur-sm" : ""
+      } flex items-center justify-center z-50 p-4`}
       onClick={isModal ? close : undefined}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
       >
-
-        {/* Tabs */}
         <div className="flex border-b border-gray-200 bg-gray-50">
           <button
             onClick={() => {
               setScreen("login");
               setError("");
+              setVerificationPending(false);
             }}
             className={`flex-1 py-4 text-sm font-semibold transition-all ${
               screen === "login"
@@ -109,6 +113,7 @@ export default function SignIn({ open = true, setOpen }) {
             onClick={() => {
               setScreen("register");
               setError("");
+              setVerificationPending(false);
             }}
             className={`flex-1 py-4 text-sm font-semibold transition-all ${
               screen === "register"
@@ -120,7 +125,6 @@ export default function SignIn({ open = true, setOpen }) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-8">
           {displayError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -128,37 +132,42 @@ export default function SignIn({ open = true, setOpen }) {
             </div>
           )}
 
-          {/* Login Screen */}
           {screen === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
                 </label>
-                <input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="you@example.com"
-                  required
-                />
+                <div className="relative">
+                  <FaEnvelope className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password
                 </label>
-                <input
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="Enter your password"
-                  required
-                />
+                <div className="relative">
+                  <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
               </div>
 
               <button
@@ -180,82 +189,96 @@ export default function SignIn({ open = true, setOpen }) {
             </form>
           )}
 
-          {/* Register Screen - Form */}
           {screen === "register" && !verificationPending && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name
                 </label>
-                <input
-                  name="full_name"
-                  type="text"
-                  value={formData.full_name}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="Name"
-                  required
-                />
+                <div className="relative">
+                  <FaUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="full_name"
+                    type="text"
+                    value={formData.full_name}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="Name"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
-                <input
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="+1 (555) 123-4567"
-                  required
-                />
+                <div className="relative">
+                  <FaPhoneAlt className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="+1 (555) 123-4567"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
                 </label>
-                <input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="Email"
-                  required
-                />
+                <div className="relative">
+                  <FaEnvelope className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="Email"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password
                 </label>
-                <input
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="Create a password"
-                  required
-                />
+                <div className="relative">
+                  <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="Create a password"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm Password
                 </label>
-                <input
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={onChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                  placeholder="Confirm your password"
-                  required
-                />
+                <div className="relative">
+                  <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={onChange}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    placeholder="Confirm your password"
+                    required
+                  />
+                </div>
               </div>
 
               <button
@@ -272,7 +295,6 @@ export default function SignIn({ open = true, setOpen }) {
             </form>
           )}
 
-          {/* Verification Pending */}
           {screen === "verify" && verificationPending && (
             <div className="text-center py-4">
               <div className="mb-4 text-4xl">✉️</div>
@@ -280,11 +302,12 @@ export default function SignIn({ open = true, setOpen }) {
                 Verify Your Email
               </h3>
               <p className="text-gray-600 text-sm mb-6">
-                We've sent a verification link to <br />
+                We&apos;ve sent a verification link to <br />
                 <strong className="text-gray-900">{formData.email}</strong>
               </p>
               <p className="text-gray-600 text-sm mb-6">
-                Please check your inbox and click the verification link to complete your registration.
+                Please check your inbox and click the verification link to
+                complete your registration.
               </p>
 
               <button

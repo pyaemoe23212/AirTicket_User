@@ -1,85 +1,81 @@
+const destinations = [
+  {
+    name: "Paris",
+    image:
+      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Tokyo",
+    image:
+      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Dubai",
+    image:
+      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "New York",
+    image:
+      "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "London",
+    image:
+      "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Barcelona",
+    image:
+      "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Rome",
+    image:
+      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Sydney",
+    image:
+      "https://images.unsplash.com/photo-1523428461295-92770e70d7ae?auto=format&fit=crop&w=800&q=80",
+  },
+];
+
 function AdvertisementSection() {
   return (
-    <div className="max-w-7xl mx-auto mt-20 px-6">
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-medium">
-          Advertisement Banners
+    <section className="pt-16 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold text-slate-800">
+          Popular Destinations
         </h2>
-        <span className="text-xs text-gray-400 uppercase">
-          Sponsored Content
-        </span>
-      </div>
-
-      {/* LARGE TOP BANNER */}
-      <div className="border border-gray-300 bg-gray-200 h-72 flex flex-col items-center justify-center mb-8">
-        <p className="text-xs text-gray-500 mb-1">[ADVERTISEMENT]</p>
-        <p className="text-lg font-medium text-gray-700">
-          Large Banner
+        <p className="mt-2 text-slate-500">
+          Discover the world&apos;s most loved travel destinations
         </p>
-        <p className="text-xs text-gray-500">1248 x 280</p>
-      </div>
 
-      {/* MAIN GRID SECTION */}
-      <div className="grid grid-cols-4 gap-6">
-
-        {/* LEFT VERTICAL */}
-        <div className="col-span-1 border border-gray-300 bg-gray-200 h-[400px] flex flex-col items-center justify-center">
-          <p className="text-xs text-gray-500 mb-1">[AD]</p>
-          <p className="text-sm font-medium text-gray-700">
-            Vertical Banner
-          </p>
-          <p className="text-xs text-gray-500">
-            Premium Offer
-          </p>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {destinations.map((item) => (
+            <div
+              key={item.name}
+              className="group relative h-64 rounded-2xl overflow-hidden shadow-md"
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://images.unsplash.com/photo-1523428461295-92770e70d7ae?auto=format&fit=crop&w=800&q=80";
+                }}
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <h3 className="absolute bottom-4 left-4 text-white text-xl font-semibold">
+                {item.name}
+              </h3>
+            </div>
+          ))}
         </div>
-
-        {/* RIGHT SIDE */}
-        <div className="col-span-3 flex flex-col gap-6">
-
-          {/* WIDE BANNER */}
-          <div className="border border-gray-300 bg-gray-200 h-32 flex flex-col items-center justify-center">
-            <p className="text-xs text-gray-500 mb-1">[SPONSORED]</p>
-            <p className="text-sm font-medium text-gray-700">
-              Wide Banner Advertisement
-            </p>
-            <p className="text-xs text-gray-500">
-              Credit Card Offer
-            </p>
-          </div>
-
-          {/* 3 SMALL BOXES */}
-          <div className="grid grid-cols-3 gap-6">
-
-            <div className="border border-gray-300 bg-gray-200 h-32 flex flex-col items-center justify-center">
-              <p className="text-xs text-gray-500">[AD]</p>
-              <p className="text-sm text-gray-700">
-                Destination
-              </p>
-            </div>
-
-            <div className="border border-gray-300 bg-gray-200 h-32 flex flex-col items-center justify-center">
-              <p className="text-xs text-gray-500">[AD]</p>
-              <p className="text-sm text-gray-700">
-                Destination
-              </p>
-            </div>
-
-            <div className="border border-gray-300 bg-gray-200 h-32 flex flex-col items-center justify-center">
-              <p className="text-xs text-gray-500">[PARTNER]</p>
-              <p className="text-sm text-gray-700">
-                Airline
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-
       </div>
-
-    </div>
+    </section>
   );
 }
 

@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { getBookingDetail, getSecureTicket, getTicketStatus } from "../utils/api";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  getBookingDetail,
+  getSecureTicket,
+  getTicketStatus,
+} from "../utils/api";
 
 export default function BookingView() {
   const navigate = useNavigate();
@@ -18,10 +22,20 @@ export default function BookingView() {
       try {
         setLoading(true);
         setError("");
+
         const data = await getBookingDetail(bookingId);
+
+        console.log("BOOKING ID:", bookingId);
+        console.log("BOOKING DETAIL:", data);
+        console.log("FLIGHT SNAPSHOT:", data?.flight_snapshot);
+
         setBooking(data || null);
       } catch (err) {
-        setError(err?.response?.data?.detail || "Failed to load booking detail");
+        setError(
+          err?.response?.data?.detail ||
+            err?.response?.data?.message ||
+            "Failed to load booking detail"
+        );
         setBooking(null);
       } finally {
         setLoading(false);
@@ -34,7 +48,6 @@ export default function BookingView() {
         const statusData = await getTicketStatus(bookingId);
         setTicketStatus(statusData || null);
       } catch (err) {
-        // Silently fail for ticket status - not critical
         setTicketStatus(null);
       } finally {
         setTicketStatusLoading(false);
@@ -52,18 +65,28 @@ export default function BookingView() {
     return Number.isFinite(n) ? n : 0;
   };
 
-  const formatUSD = (value) => "$" + toNumber(value).toFixed(2);
   const formatMMK = (value) => "MMK " + toNumber(value).toLocaleString();
 
   const getEstimatePriceMMK = () => {
     if (!booking) return "-";
+
     const snap = booking.flight_snapshot || {};
-    const priceMinMMK = snap?.price_estimate_min_mmk || booking.final_price_mmk;
-    const priceMaxMMK = snap?.price_estimate_max_mmk || booking.final_price_mmk;
-    
+    const priceMinMMK =
+      snap?.price_estimate_min_mmk ||
+      snap?.outbound?.price_estimate_min_mmk ||
+      booking.price_estimate_min_mmk ||
+      booking.final_price_mmk;
+
+    const priceMaxMMK =
+      snap?.price_estimate_max_mmk ||
+      snap?.outbound?.price_estimate_max_mmk ||
+      booking.price_estimate_max_mmk ||
+      booking.final_price_mmk;
+
     if (priceMinMMK && priceMaxMMK && priceMinMMK !== priceMaxMMK) {
-      return formatMMK(priceMinMMK) + " - " + formatMMK(priceMaxMMK);
+      return `${formatMMK(priceMinMMK)} - ${formatMMK(priceMaxMMK)}`;
     }
+
     return formatMMK(priceMaxMMK || priceMinMMK || 0);
   };
 
@@ -84,26 +107,47 @@ export default function BookingView() {
   const formatDuration = (minutes) => {
     const m = Number(minutes);
     if (!Number.isFinite(m) || m <= 0) return "-";
+
     const h = Math.floor(m / 60);
     const r = m % 60;
-    if (h === 0) return r + " minutes";
-    if (r === 0) return h + "h";
-    return h + "h " + r + "m";
+
+    if (h === 0) return `${r} minutes`;
+    if (r === 0) return `${h}h`;
+    return `${h}h ${r}m`;
+  };
+
+  const getValue = (...values) => {
+    return values.find((value) => value !== undefined && value !== null && value !== "") || "-";
   };
 
   const statusBadge = (status) => {
     const s = String(status || "").toUpperCase();
-    if (s === "CONFIRMED" || s === "COMPLETED") return "bg-green-100 text-green-700";
-    if (s === "PENDING") return "bg-yellow-100 text-yellow-700";
-    if (s === "CANCELLED") return "bg-red-100 text-red-700";
+
+    if (s === "CONFIRMED" || s === "COMPLETED") {
+      return "bg-green-100 text-green-700";
+    }
+
+    if (s === "PENDING" || s === "PROCESSING") {
+      return "bg-yellow-100 text-yellow-700";
+    }
+
+    if (s === "CANCELLED") {
+      return "bg-red-100 text-red-700";
+    }
+
     return "bg-gray-100 text-gray-700";
   };
 
   const paymentBadge = (status) => {
     const s = String(status || "").toUpperCase();
+
     if (s === "PAID") return "bg-green-100 text-green-700";
     if (s === "FAILED") return "bg-red-100 text-red-700";
-    if (s === "PENDING" || s === "UNPAID") return "bg-yellow-100 text-yellow-700";
+
+    if (s === "PENDING" || s === "UNPAID") {
+      return "bg-yellow-100 text-yellow-700";
+    }
+
     return "bg-gray-100 text-gray-700";
   };
 
@@ -116,32 +160,62 @@ export default function BookingView() {
 
   const flightData = useMemo(() => {
     const snap = booking?.flight_snapshot || {};
+
+    const outbound =
+      snap.outbound ||
+      snap.departure ||
+      snap.departure_flight ||
+      snap.outbound_flight ||
+      snap.departureFlight ||
+      snap.outboundFlight ||
+      null;
+
+    const inbound =
+      snap.inbound ||
+      snap.return ||
+      snap.return_flight ||
+      snap.inbound_flight ||
+      snap.returnFlight ||
+      snap.inboundFlight ||
+      null;
+
+    const oneWay =
+      !outbound && !inbound && Object.keys(snap).length > 0 ? snap : null;
+
     return {
-      outbound: snap.outbound || null,
-      inbound: snap.inbound || null,
-      oneWay: !snap.outbound && !snap.inbound ? snap : null,
+      outbound,
+      inbound,
+      oneWay,
     };
   }, [booking]);
 
   const passengers = useMemo(() => {
     if (!booking) return [];
+
     if (Array.isArray(booking.passengers)) return booking.passengers;
     if (Array.isArray(booking.passenger_details)) return booking.passenger_details;
     if (Array.isArray(booking.passenger_list)) return booking.passenger_list;
+
     return [];
   }, [booking]);
 
   const handleDownloadTicket = async () => {
     try {
       setDownloading(true);
+
       const blob = await getSecureTicket(bookingId);
-      
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
-      a.download = booking.original_ticket_name || booking.original_name || `ticket-${booking.booking_code}.pdf`;
+      a.download =
+        booking.original_ticket_name ||
+        booking.original_name ||
+        `ticket-${booking.booking_code || bookingId}.pdf`;
+
       document.body.appendChild(a);
       a.click();
+
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
@@ -149,6 +223,88 @@ export default function BookingView() {
     } finally {
       setDownloading(false);
     }
+  };
+
+  const FlightSection = ({ title, data }) => {
+    if (!data) return null;
+
+    const airlineCode = getValue(data.airline_code, data.carrier_code);
+    const flightNumber = getValue(data.flight_number, data.number);
+    const airlineName = getValue(data.airline, data.airline_name, data.carrier_name);
+    const origin = getValue(
+      data.origin,
+      data.from,
+      data.departure_airport_code,
+      data.departure_iata,
+      data.origin_code
+    );
+    const destination = getValue(
+      data.destination,
+      data.to,
+      data.arrival_airport_code,
+      data.arrival_iata,
+      data.destination_code
+    );
+    const departureTime = getValue(
+      data.departure_time,
+      data.departureTime,
+      data.departure_datetime
+    );
+    const arrivalTime = getValue(
+      data.arrival_time,
+      data.arrivalTime,
+      data.arrival_datetime
+    );
+
+    return (
+      <section className="border-t border-gray-200 px-6 py-6">
+        <h3 className="mb-5 text-2xl font-semibold text-gray-900">{title}</h3>
+
+        <div className="grid grid-cols-1 gap-y-6 md:grid-cols-3 md:gap-x-12">
+          <div>
+            <p className="text-sm text-gray-500">Airline & Flight</p>
+            <p className="text-lg font-medium text-gray-900">
+              {[airlineCode !== "-" ? airlineCode : "", flightNumber !== "-" ? flightNumber : ""]
+                .filter(Boolean)
+                .join("-") || "-"}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Route</p>
+            <p className="text-lg font-medium text-gray-900">
+              {origin} → {destination}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Departure</p>
+            <p className="text-lg font-medium text-gray-900">
+              {formatDateTime(departureTime)}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Arrival</p>
+            <p className="text-lg font-medium text-gray-900">
+              {formatDateTime(arrivalTime)}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Duration</p>
+            <p className="text-lg font-medium text-gray-900">
+              {formatDuration(data.duration_minutes || data.duration)}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500">Airline Name</p>
+            <p className="text-lg font-medium text-gray-900">{airlineName}</p>
+          </div>
+        </div>
+      </section>
+    );
   };
 
   if (loading) {
@@ -165,6 +321,7 @@ export default function BookingView() {
         <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
+
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -186,43 +343,6 @@ export default function BookingView() {
 
   const { outbound, inbound, oneWay } = flightData;
 
-  const FlightSection = ({ title, data }) => {
-    if (!data) return null;
-    return (
-      <section className="border-t border-gray-200 px-6 py-6">
-        <h3 className="mb-5 text-2xl font-semibold text-gray-900">{title}</h3>
-        <div className="grid grid-cols-1 gap-y-6 md:grid-cols-3 md:gap-x-12">
-          <div>
-            <p className="text-sm text-gray-500">Airline & Flight</p>
-            <p className="text-lg font-medium text-gray-900">{data.flight_number || "-"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Route</p>
-            <p className="text-lg font-medium text-gray-900">
-              {(data.origin || "-") + " → " + (data.destination || "-")}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Departure</p>
-            <p className="text-lg font-medium text-gray-900">{formatDateTime(data.departure_time)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Arrival</p>
-            <p className="text-lg font-medium text-gray-900">{formatDateTime(data.arrival_time)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Duration</p>
-            <p className="text-lg font-medium text-gray-900">{formatDuration(data.duration_minutes)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Airline Name</p>
-            <p className="text-lg font-medium text-gray-900">{data.airline || "-"}</p>
-          </div>
-        </div>
-      </section>
-    );
-  };
-
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-8 text-gray-800 md:px-10">
       <div className="mb-5 flex items-center justify-between">
@@ -241,8 +361,11 @@ export default function BookingView() {
             <h1 className="text-3xl font-semibold text-gray-900">
               Booking {booking.booking_code || "-"}
             </h1>
-            <p className="mt-1 text-base text-gray-500">Booked on {formatDate(booking.created_at)}</p>
+            <p className="mt-1 text-base text-gray-500">
+              Booked on {formatDate(booking.created_at)}
+            </p>
           </div>
+
           <span
             className={
               "inline-flex items-center rounded-full px-4 py-1.5 text-sm font-semibold " +
@@ -254,38 +377,72 @@ export default function BookingView() {
         </div>
 
         <section className="px-6 py-6">
-          <h2 className="mb-5 text-2xl font-semibold text-gray-900">Booking Information</h2>
+          <h2 className="mb-5 text-2xl font-semibold text-gray-900">
+            Booking Information
+          </h2>
+
           <div className="grid grid-cols-1 gap-y-6 md:grid-cols-3 md:gap-x-12">
             <div>
               <p className="text-sm text-gray-500">Booking Code</p>
-              <p className="text-xl font-semibold text-gray-900">{booking.booking_code || "-"}</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {booking.booking_code || "-"}
+              </p>
             </div>
+
             <div>
               <p className="text-sm text-gray-500">Booking ID</p>
-              <p className="break-all text-base text-gray-900">{booking.booking_id || "-"}</p>
+              <p className="break-all text-base text-gray-900">
+                {booking.booking_id || booking.id || "-"}
+              </p>
             </div>
+
             <div>
               <p className="text-sm text-gray-500">Trip Type</p>
-              <p className="text-xl font-semibold text-gray-900">{tripTypeLabel}</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {tripTypeLabel}
+              </p>
             </div>
+
             <div>
               <p className="text-sm text-gray-500">Number of Adults</p>
-              <p className="text-xl font-semibold text-gray-900">{booking.adults ?? 1}</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {booking.adults ?? 1}
+              </p>
             </div>
+
             <div>
-              <p className="text-sm text-gray-500"> Estimate Price (MMK)</p>
-              <p className="text-xl font-semibold text-gray-900">{getEstimatePriceMMK()}</p>
+              <p className="text-sm text-gray-500">Estimate Price (MMK)</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {getEstimatePriceMMK()}
+              </p>
             </div>
           </div>
         </section>
 
         {(outbound || oneWay) && (
-          <FlightSection title={outbound ? "Outbound Flight" : "Flight"} data={outbound || oneWay} />
+          <FlightSection
+            title={outbound ? "Outbound Flight" : "Flight"}
+            data={outbound || oneWay}
+          />
         )}
+
         {inbound && <FlightSection title="Inbound Flight" data={inbound} />}
 
+        {!outbound && !inbound && !oneWay && (
+          <section className="border-t border-gray-200 px-6 py-6">
+            <h3 className="mb-4 text-2xl font-semibold text-gray-900">
+              Flight Information
+            </h3>
+            <div className="rounded border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
+              No flight details found in this booking.
+            </div>
+          </section>
+        )}
+
         <section className="border-t border-gray-200 px-6 py-6">
-          <h3 className="mb-4 text-2xl font-semibold text-gray-900">Passengers</h3>
+          <h3 className="mb-4 text-2xl font-semibold text-gray-900">
+            Passengers
+          </h3>
 
           {passengers.length === 0 && (
             <div className="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
@@ -302,33 +459,50 @@ export default function BookingView() {
                 "-";
 
               return (
-                <div key={p.id || idx} className="rounded border border-gray-300 p-4">
-                  <h4 className="mb-3 text-lg font-semibold text-gray-900">Passenger {idx + 1}</h4>
+                <div
+                  key={p.id || idx}
+                  className="rounded border border-gray-300 p-4"
+                >
+                  <h4 className="mb-3 text-lg font-semibold text-gray-900">
+                    Passenger {idx + 1}
+                  </h4>
+
                   <div className="grid grid-cols-1 gap-y-4 md:grid-cols-3 md:gap-x-10">
                     <div>
                       <p className="text-sm text-gray-500">Full Name</p>
-                      <p className="text-lg font-medium text-gray-900">{fullName}</p>
+                      <p className="text-lg font-medium text-gray-900">
+                        {fullName}
+                      </p>
                     </div>
+
                     <div>
                       <p className="text-sm text-gray-500">Passport Number</p>
                       <p className="text-lg font-medium text-gray-900">
                         {p.passport_number || p.passport || "-"}
                       </p>
                     </div>
+
                     <div>
                       <p className="text-sm text-gray-500">Gender</p>
-                      <p className="text-lg font-medium text-gray-900">{p.gender || "-"}</p>
+                      <p className="text-lg font-medium text-gray-900">
+                        {p.gender || "-"}
+                      </p>
                     </div>
+
                     <div>
                       <p className="text-sm text-gray-500">Date of Birth</p>
                       <p className="text-lg font-medium text-gray-900">
                         {formatDate(p.date_of_birth || p.dob)}
                       </p>
                     </div>
+
                     <div>
                       <p className="text-sm text-gray-500">Nationality</p>
-                      <p className="text-lg font-medium text-gray-900">{p.nationality || "-"}</p>
+                      <p className="text-lg font-medium text-gray-900">
+                        {p.nationality || "-"}
+                      </p>
                     </div>
+
                     <div>
                       <p className="text-sm text-gray-500">Phone Number</p>
                       <p className="text-lg font-medium text-gray-900">
@@ -344,7 +518,9 @@ export default function BookingView() {
 
         <section className="border-t border-gray-200 px-6 py-6">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-2xl font-semibold text-gray-900">Payment & Status</h3>
+            <h3 className="text-2xl font-semibold text-gray-900">
+              Payment & Status
+            </h3>
           </div>
 
           <div className="grid grid-cols-1 gap-y-4 md:grid-cols-3 md:gap-x-12">
@@ -374,14 +550,18 @@ export default function BookingView() {
 
             <div>
               <p className="text-sm text-gray-500">Booked Date</p>
-              <p className="text-lg font-semibold text-gray-900">{formatDateTime(booking.created_at)}</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {formatDateTime(booking.created_at)}
+              </p>
             </div>
           </div>
         </section>
 
         <section className="border-t border-gray-200 px-6 py-6">
-          <h3 className="mb-4 text-2xl font-semibold text-gray-900">Ticket File</h3>
-          
+          <h3 className="mb-4 text-2xl font-semibold text-gray-900">
+            Ticket File
+          </h3>
+
           {ticketStatusLoading ? (
             <div className="rounded border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
               Loading ticket status...
@@ -389,28 +569,34 @@ export default function BookingView() {
           ) : ticketStatus?.has_ticket ? (
             <div className="space-y-4">
               <div className="rounded border border-green-200 bg-green-50 p-4">
-                <p className="text-sm text-green-700 font-medium mb-2"> Ticket Uploaded</p>
+                <p className="mb-2 text-sm font-medium text-green-700">
+                  Ticket Uploaded
+                </p>
+
                 {ticketStatus?.ticket_uploaded_at && (
                   <p className="text-xs text-green-600">
-                    Uploaded on {formatDateTime(ticketStatus.ticket_uploaded_at)}
+                    Uploaded on{" "}
+                    {formatDateTime(ticketStatus.ticket_uploaded_at)}
                   </p>
                 )}
               </div>
-              <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-                <button
-                  disabled={downloading}
-                  onClick={handleDownloadTicket}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm disabled:opacity-60 disabled:cursor-not-allowed transition"
-                >
-                  {downloading ? "Downloading..." : "Download Ticket"}
-                </button>
-              </div>
+
+              <button
+                disabled={downloading}
+                onClick={handleDownloadTicket}
+                className="rounded bg-blue-600 px-4 py-2 text-sm text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {downloading ? "Downloading..." : "Download Ticket"}
+              </button>
             </div>
           ) : (
             <div className="rounded border border-yellow-200 bg-yellow-50 p-4">
-              <p className="text-sm text-yellow-700 font-medium">  No Ticket Uploaded Yet</p>
-              <p className="text-xs text-yellow-600 mt-1">
-                The ticket file will be available once it has been uploaded by the airline or administrator.
+              <p className="text-sm font-medium text-yellow-700">
+                No Ticket Uploaded Yet
+              </p>
+              <p className="mt-1 text-xs text-yellow-600">
+                The ticket file will be available once it has been uploaded by
+                the airline or administrator.
               </p>
             </div>
           )}

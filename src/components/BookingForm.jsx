@@ -20,51 +20,27 @@ const createEmptyPassenger = () => ({
 
 // SVG icons
 const EmailIcon = (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path d="M3 8l9 6 9-6" />
     <rect x="3" y="6" width="18" height="12" rx="2" />
   </svg>
 );
 
 const PhoneIcon = (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path d="M22 16.92v3a2 2 0 01-2.18 2A19.86 19.86 0 013 5.18 2 2 0 015 3h3a2 2 0 012 1.72c.12.9.33 1.78.63 2.61a2 2 0 01-.45 2.11L9.91 10.91a16 16 0 006.18 6.18l1.47-1.47a2 2 0 012.11-.45c.83.3 1.71.51 2.61.63A2 2 0 0122 16.92z" />
   </svg>
 );
 
 const LocationIcon = (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path d="M12 21s-6-5.33-6-10a6 6 0 1112 0c0 4.67-6 10-6 10z" />
     <circle cx="12" cy="11" r="2" />
   </svg>
 );
 
 const CalendarIcon = (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <rect x="3" y="4" width="18" height="18" rx="2" />
     <line x1="16" y1="2" x2="16" y2="6" />
     <line x1="8" y1="2" x2="8" y2="6" />
@@ -73,13 +49,7 @@ const CalendarIcon = (
 );
 
 const PassportIcon = (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <rect x="4" y="3" width="16" height="18" rx="2" />
     <circle cx="12" cy="10" r="3" />
     <path d="M8 16h8" />
@@ -137,8 +107,7 @@ const getFlightDisplayData = (flight) => {
   const snapshot = flight?.flight_snapshot || flight;
   const isRoundTrip = flight?.type === "ROUND_TRIP";
 
-  const segment =
-    isRoundTrip && snapshot?.outbound ? snapshot.outbound : snapshot;
+  const segment = isRoundTrip && snapshot?.outbound ? snapshot.outbound : snapshot;
 
   const fromCode =
     segment?.origin ||
@@ -223,6 +192,7 @@ export default function BookingForm({
       try {
         setIsLoadingContact(true);
         const existingContact = await getMyContact();
+
         setContact({
           givenName: existingContact.given_name,
           lastName: existingContact.last_name,
@@ -232,6 +202,7 @@ export default function BookingForm({
           id: existingContact.id,
           createdAt: existingContact.created_at,
         });
+
         setContactExists(true);
       } catch (err) {
         setContactExists(false);
@@ -305,8 +276,16 @@ export default function BookingForm({
   };
 
   const handleConfirm = async () => {
+    if (isConfirming) return;
+
     try {
       setError(null);
+
+      console.log("===== CONFIRM BOOKING CLICKED =====");
+      console.log("CONTACT:", contact);
+      console.log("PASSENGERS:", passenger);
+      console.log("SELECTED FLIGHTS:", selectedFlights);
+      console.log("TRIP TYPE:", tripType);
 
       if (!contactExists) {
         setError("Please create a contact first");
@@ -321,9 +300,9 @@ export default function BookingForm({
       setIsConfirming(true);
 
       const outboundFlight = selectedFlights[0];
+
       if (!outboundFlight) {
         setError("No flight selected");
-        setIsConfirming(false);
         return;
       }
 
@@ -343,11 +322,14 @@ export default function BookingForm({
         flight_snapshot: flightSnapshot,
       };
 
+      console.log("BOOKING PAYLOAD:", bookingPayload);
+
       const bookingResponse = await createBooking(bookingPayload);
+
+      console.log("BOOKING RESPONSE:", bookingResponse);
 
       if (!bookingResponse.booking_id) {
         setError("Failed to get booking ID");
-        setIsConfirming(false);
         return;
       }
 
@@ -364,11 +346,16 @@ export default function BookingForm({
         })),
       };
 
+      console.log("PASSENGERS PAYLOAD:", passengersPayload);
+
       await addPassengers(bookingResponse.booking_id, passengersPayload);
+
+      console.log("===== BOOKING SUCCESS =====");
+
       navigate("/profile");
     } catch (err) {
+      console.error("BOOKING ERROR:", err?.response?.data || err);
       setError(err.response?.data?.message || "Failed to complete booking");
-      console.error(err.response?.data || err);
     } finally {
       setIsConfirming(false);
     }

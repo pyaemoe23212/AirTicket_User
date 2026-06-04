@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { resendVerificationEmail } from "../utils/api";
-import { FaEnvelope, FaLock, FaUser, FaPhoneAlt, FaTimes } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaUser, FaPhoneAlt, FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function SignIn({ open = true, setOpen }) {
   const [screen, setScreen] = useState("login");
@@ -20,6 +20,8 @@ export default function SignIn({ open = true, setOpen }) {
   const [error, setError] = useState("");
   const [verificationPending, setVerificationPending] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const isModal = typeof setOpen === "function";
   if (isModal && !open) return null;
@@ -42,7 +44,20 @@ export default function SignIn({ open = true, setOpen }) {
       close();
       navigate("/");
     } catch (err) {
-      setError(err.message || "Login failed");
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail || err.message || "Login failed";
+      if (status === 403 && detail.toLowerCase().includes("not verified")) {
+        setVerificationPending(true);
+        setScreen("verify");
+      } else if (status === 404) {
+        setError("No account found with this email address. Please sign up first.");
+      } else if (status === 401) {
+        setError("Incorrect password. Please try again.");
+      } else if (status === 403 && detail.toLowerCase().includes("inactive")) {
+        setError("Your account has been deactivated. Please contact support.");
+      } else {
+        setError(detail);
+      }
     }
   };
 
@@ -66,7 +81,14 @@ export default function SignIn({ open = true, setOpen }) {
       setVerificationPending(true);
       setScreen("verify");
     } catch (err) {
-      setError(err.message || "Signup failed");
+      const detail = err?.response?.data?.detail || err.message || "Signup failed";
+      if (detail.toLowerCase().includes("already registered")) {
+        setVerificationPending(true);
+        setScreen("verify");
+        resendVerificationEmail({ email: formData.email }).catch(() => {});
+      } else {
+        setError(detail);
+      }
     }
   };
 
@@ -201,13 +223,20 @@ export default function SignIn({ open = true, setOpen }) {
                   <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={onChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     placeholder="Enter your password"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
               </div>
 
@@ -318,13 +347,20 @@ export default function SignIn({ open = true, setOpen }) {
                   <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={onChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     placeholder="Create a password"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
               </div>
 
@@ -337,13 +373,20 @@ export default function SignIn({ open = true, setOpen }) {
                   <FaLock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                   <input
                     name="confirmPassword"
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={onChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     placeholder="Confirm your password"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
               </div>
 
